@@ -45,6 +45,12 @@ export default function RootLayout({
                 <li>
                   <Link href="/timesheets-list">Timesheets</Link>
                 </li>
+                <li>
+                  <Link href="/tutorial">Tutorial</Link>
+                </li>
+                <li>
+                  <Link href="/dev-page">Dev Stuff</Link>
+                </li>
               </ul>
             </nav>
             <main style={{ flex: 1, padding: "20px" }}>

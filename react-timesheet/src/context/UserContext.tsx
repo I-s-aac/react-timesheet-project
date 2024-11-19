@@ -14,7 +14,9 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const [userId, setUserId] = useState<string>("user123"); // Initial user ID for testing
+  const userName = Math.random() > 0.5 ? "user123" : "user321";
+  console.log(userName);
+  const [userId, setUserId] = useState<string>(userName); // Initial user ID for testing
 
   return (
     <UserContext.Provider value={{ userId, setUserId }}>
