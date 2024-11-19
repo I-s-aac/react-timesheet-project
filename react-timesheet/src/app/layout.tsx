@@ -46,6 +46,9 @@ export default function RootLayout({
                   <Link href="/timesheets-list">Timesheets</Link>
                 </li>
                 <li>
+                  <Link href="/auth-page">Sign in/Sign up</Link>
+                </li>
+                <li>
                   <Link href="/tutorial">Tutorial</Link>
                 </li>
                 <li>

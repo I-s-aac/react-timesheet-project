@@ -3,8 +3,8 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 
 // Type for the user context
 type UserContextType = {
-  userId: string;
-  setUserId: (userId: string) => void;
+  userId: string | null;
+  setUserId: (userId: string | null) => void;
 };
 
 // Create a context with default values
@@ -14,9 +14,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export const UserProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
-  const userName = Math.random() > 0.5 ? "user123" : "user321";
-  console.log(userName);
-  const [userId, setUserId] = useState<string>(userName); // Initial user ID for testing
+  const [userId, setUserId] = useState<string | null>(null);
 
   return (
     <UserContext.Provider value={{ userId, setUserId }}>

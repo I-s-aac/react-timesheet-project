@@ -24,18 +24,20 @@ export default function DevPage() {
   useEffect(() => {
     const fetchTimesheets = async () => {
       try {
-        const timesheetCollection = collection(
-          db,
-          "users",
-          userId,
-          "timesheets"
-        );
-        const timesheetSnapshot = await getDocs(timesheetCollection);
-        const timesheetsData = timesheetSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setTimesheets(timesheetsData); // Update the state with the fetched timesheets
+        if (userId) {
+          const timesheetCollection = collection(
+            db,
+            "users",
+            userId,
+            "timesheets"
+          );
+          const timesheetSnapshot = await getDocs(timesheetCollection);
+          const timesheetsData = timesheetSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setTimesheets(timesheetsData); // Update the state with the fetched timesheets
+        }
       } catch (error) {
         console.error("Error fetching timesheets:", error);
       }
@@ -49,9 +51,11 @@ export default function DevPage() {
   // Function to save a new timesheet
   const handleSave = async () => {
     try {
-      const newTimesheet = { title, date, in: timeIn, out: timeOut, detail };
-      const id = await saveTimesheet(userId, newTimesheet);
-      alert(`Timesheet saved with ID: ${id}`);
+      if (userId) {
+        const newTimesheet = { title, date, in: timeIn, out: timeOut, detail };
+        const id = await saveTimesheet(userId, newTimesheet);
+        alert(`Timesheet saved with ID: ${id}`);
+      }
     } catch (error) {
       console.error("Error saving timesheet:", error);
     }
@@ -60,9 +64,11 @@ export default function DevPage() {
   // Function to update an existing timesheet
   const handleUpdate = async () => {
     try {
-      const updatedData = { title, date, in: timeIn, out: timeOut, detail };
-      await updateTimesheet(userId, timesheetId, updatedData);
-      alert(`Timesheet ${timesheetId} updated successfully.`);
+      if (userId) {
+        const updatedData = { title, date, in: timeIn, out: timeOut, detail };
+        await updateTimesheet(userId, timesheetId, updatedData);
+        alert(`Timesheet ${timesheetId} updated successfully.`);
+      }
     } catch (error) {
       console.error("Error updating timesheet:", error);
     }
@@ -71,8 +77,10 @@ export default function DevPage() {
   // Function to delete a timesheet
   const handleDelete = async () => {
     try {
-      await deleteTimesheet(userId, timesheetId);
-      alert(`Timesheet ${timesheetId} deleted successfully.`);
+      if (userId) {
+        await deleteTimesheet(userId, timesheetId);
+        alert(`Timesheet ${timesheetId} deleted successfully.`);
+      }
     } catch (error) {
       console.error("Error deleting timesheet:", error);
     }
