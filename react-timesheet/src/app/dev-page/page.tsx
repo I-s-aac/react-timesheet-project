@@ -8,16 +8,17 @@ import {
 } from "@/services/timesheet";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/services/firebase";
-import { useUser } from "@/context/UserContext"; // Import the custom hook to get userId
+import { useUser } from "@/contexts/UserContext"; // Import the custom hook to get userId
+import { signInWithGoogle } from "@/services/auth";
 
 export default function DevPage() {
-  const { userId } = useUser(); // Get the userId from the context
+  const { userId, setUserId } = useUser(); // Get the userId from the context
   const [timesheetId, setTimesheetId] = useState(""); // For updating/deleting specific timesheets
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [timeIn, setTimeIn] = useState("");
   const [timeOut, setTimeOut] = useState("");
-  const [detail, setDetail] = useState("");
+  const [detail, setDetail] = useState(""); // Detail field
   const [timesheets, setTimesheets] = useState<any[]>([]); // Stores fetched timesheets from Firestore
 
   // Fetch the user's timesheets based on userId
@@ -85,13 +86,23 @@ export default function DevPage() {
       console.error("Error deleting timesheet:", error);
     }
   };
+  // Handle Google sign-in
+  const handleSignInWithGoogle = async () => {
+    try {
+      console.log("test test");
+      await signInWithGoogle(setUserId); // Call the function and pass setUserId
+      console.log("test");
+    } catch (error) {
+      console.error("Error signing in with Google:", error);
+    }
+  };
 
   return (
     <div style={{ display: "flex", padding: "20px" }}>
       {/* Left Column: Input Fields and Buttons */}
       <div style={{ flex: 1, marginRight: "20px" }}>
         <h1>Dev Page</h1>
-
+        <button onClick={() => handleSignInWithGoogle()}>Google sign in</button>
         {/* Inputs for timesheet data */}
         <div>
           <label>Timesheet ID (for update/delete):</label>
@@ -140,11 +151,15 @@ export default function DevPage() {
         </div>
         <div>
           <label>Detail:</label>
-          <input
-            type="text"
+          <textarea
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
+            style={{
+              marginLeft: "10px",
+              marginBottom: "10px",
+              width: "100%",
+              height: "80px",
+            }}
           />
         </div>
 
