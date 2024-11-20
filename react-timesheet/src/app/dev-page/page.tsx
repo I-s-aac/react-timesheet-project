@@ -8,11 +8,14 @@ import {
 } from "@/services/timesheet";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/services/firebase";
-import { useUser } from "@/contexts/UserContext"; // Import the custom hook to get userId
+// import { useUser } from "@/contexts/UserContext"; // Import the custom hook to get userId
 import { signInWithGoogle } from "@/services/auth";
+import { useAuth } from "@/services/useAuth";
 
 export default function DevPage() {
-  const { userId, setUserId } = useUser(); // Get the userId from the context
+  // const { userId, setUserId } = useUser(); // Get the userId from the context
+  const user = useAuth();
+  const userId = user?.uid;
   const [timesheetId, setTimesheetId] = useState(""); // For updating/deleting specific timesheets
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
@@ -25,6 +28,7 @@ export default function DevPage() {
   useEffect(() => {
     const fetchTimesheets = async () => {
       try {
+        console.log("doin stuff");
         if (userId) {
           const timesheetCollection = collection(
             db,
@@ -89,9 +93,7 @@ export default function DevPage() {
   // Handle Google sign-in
   const handleSignInWithGoogle = async () => {
     try {
-      console.log("test test");
-      await signInWithGoogle(setUserId); // Call the function and pass setUserId
-      console.log("test");
+      await signInWithGoogle(); // Call the function and pass setUserId
     } catch (error) {
       console.error("Error signing in with Google:", error);
     }
