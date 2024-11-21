@@ -5,194 +5,222 @@ import {
   saveTimesheet,
   deleteTimesheet,
   updateTimesheet,
+  fetchTimesheets,
+  TimesheetItem,
 } from "@/services/timesheet";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "@/services/firebase";
-// import { useUser } from "@/contexts/UserContext"; // Import the custom hook to get userId
+import { Timestamp } from "firebase/firestore";
 import { signInWithGoogle } from "@/services/auth";
 import { useAuth } from "@/services/useAuth";
 
 export default function DevPage() {
-  // const { userId, setUserId } = useUser(); // Get the userId from the context
   const user = useAuth();
   const userId = user?.uid;
-  const [timesheetId, setTimesheetId] = useState(""); // For updating/deleting specific timesheets
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [timeIn, setTimeIn] = useState("");
-  const [timeOut, setTimeOut] = useState("");
-  const [detail, setDetail] = useState(""); // Detail field
-  const [timesheets, setTimesheets] = useState<any[]>([]); // Stores fetched timesheets from Firestore
 
-  // Fetch the user's timesheets based on userId
+  const [timesheets, setTimesheets] = useState<any[]>([]); // User's timesheets
+  const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
+  const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
+
+  // TimesheetItem inputs
+  const [newItem, setNewItem] = useState({
+    date: "",
+    in: "",
+    out: "",
+    title: "",
+    detail: "",
+  });
+
+  // Fetch timesheets on userId change
   useEffect(() => {
-    const fetchTimesheets = async () => {
+    const fetchUserTimesheets = async () => {
       try {
-        console.log("doin stuff");
         if (userId) {
-          const timesheetCollection = collection(
-            db,
-            "users",
-            userId,
-            "timesheets"
-          );
-          const timesheetSnapshot = await getDocs(timesheetCollection);
-          const timesheetsData = timesheetSnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setTimesheets(timesheetsData); // Update the state with the fetched timesheets
+          const fetchedTimesheets = await fetchTimesheets(userId);
+          setTimesheets(fetchedTimesheets);
         }
-      } catch (error) {
-        console.error("Error fetching timesheets:", error);
+      } catch (err) {
+        console.error("Failed to fetch timesheets:", err);
       }
     };
 
-    if (userId) {
-      fetchTimesheets();
-    }
-  }, [userId]); // Re-fetch if userId changes
+    fetchUserTimesheets();
+  }, [userId]);
 
-  // Function to save a new timesheet
-  const handleSave = async () => {
+  // Save new timesheet
+  const handleCreateTimesheet = async () => {
+    if (!newTimesheetTitle.trim()) return alert("Enter a timesheet title!");
+    const newTimesheet = {
+      title: newTimesheetTitle,
+      items: [],
+      hoursWorked: 0,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
     try {
       if (userId) {
-        const newTimesheet = { title, date, in: timeIn, out: timeOut, detail };
         const id = await saveTimesheet(userId, newTimesheet);
-        alert(`Timesheet saved with ID: ${id}`);
+        setTimesheets([...timesheets, { ...newTimesheet, id }]);
+        setNewTimesheetTitle("");
       }
-    } catch (error) {
-      console.error("Error saving timesheet:", error);
+    } catch (err) {
+      console.error("Error creating timesheet:", err);
     }
   };
 
-  // Function to update an existing timesheet
-  const handleUpdate = async () => {
+  // Delete selected timesheet
+  const handleDeleteTimesheet = async () => {
+    if (!selectedTimesheetId) return alert("Select a timesheet to delete!");
     try {
       if (userId) {
-        const updatedData = { title, date, in: timeIn, out: timeOut, detail };
-        await updateTimesheet(userId, timesheetId, updatedData);
-        alert(`Timesheet ${timesheetId} updated successfully.`);
+        await deleteTimesheet(userId, selectedTimesheetId);
+        setTimesheets(timesheets.filter((ts) => ts.id !== selectedTimesheetId));
+        setSelectedTimesheetId("");
       }
-    } catch (error) {
-      console.error("Error updating timesheet:", error);
+    } catch (err) {
+      console.error("Error deleting timesheet:", err);
     }
   };
 
-  // Function to delete a timesheet
-  const handleDelete = async () => {
+  // Add item to selected timesheet
+  const handleAddItem = async () => {
+    if (!selectedTimesheetId) return alert("Select a timesheet first!");
+    const timesheet = timesheets.find((ts) => ts.id === selectedTimesheetId);
+    if (!timesheet) return;
+
+    const itemWithHours = {
+      ...newItem,
+      hoursWorked: calculateHoursWorked(newItem.in, newItem.out),
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    };
+
+    const updatedTimesheet = {
+      ...timesheet,
+      items: [...timesheet.items, itemWithHours],
+      hoursWorked: timesheet.hoursWorked + itemWithHours.hoursWorked,
+    };
+
     try {
       if (userId) {
-        await deleteTimesheet(userId, timesheetId);
-        alert(`Timesheet ${timesheetId} deleted successfully.`);
+        await updateTimesheet(userId, selectedTimesheetId, updatedTimesheet);
+        setTimesheets((prevTimesheets) =>
+          (prevTimesheets ?? []).map((ts) =>
+            ts.id === selectedTimesheetId ? updatedTimesheet : ts
+          )
+        );
+        setNewItem({ date: "", in: "", out: "", title: "", detail: "" });
       }
-    } catch (error) {
-      console.error("Error deleting timesheet:", error);
+    } catch (err) {
+      console.error("Error adding item:", err);
     }
   };
-  // Handle Google sign-in
+
+  // Calculate hours worked
+  const calculateHoursWorked = (inTime: string, outTime: string) => {
+    const inDate = new Date(`1970-01-01T${inTime}:00Z`);
+    const outDate = new Date(`1970-01-01T${outTime}:00Z`);
+    if (outDate < inDate) outDate.setDate(outDate.getDate() + 1);
+    return (outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60); // hours
+  };
+
   const handleSignInWithGoogle = async () => {
     try {
-      await signInWithGoogle(); // Call the function and pass setUserId
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
+      await signInWithGoogle();
+    } catch (err) {
+      console.error("Error signing in with Google:", err);
     }
   };
 
   return (
-    <div style={{ display: "flex", padding: "20px" }}>
-      {/* Left Column: Input Fields and Buttons */}
-      <div style={{ flex: 1, marginRight: "20px" }}>
-        <h1>Dev Page</h1>
-        <button onClick={() => handleSignInWithGoogle()}>Google sign in</button>
-        {/* Inputs for timesheet data */}
+    <div style={{ padding: "20px" }}>
+      <h1>Dev Page</h1>
+      <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
+
+      {/* Create Timesheet */}
+      <div>
+        <h2>Create Timesheet</h2>
+        <input
+          type="text"
+          placeholder="Timesheet title"
+          value={newTimesheetTitle}
+          onChange={(e) => setNewTimesheetTitle(e.target.value)}
+        />
+        <button onClick={handleCreateTimesheet}>Create</button>
+      </div>
+
+      {/* Select Timesheet */}
+      <div>
+        <h2>Manage Timesheet</h2>
+        <select
+          value={selectedTimesheetId}
+          onChange={(e) => setSelectedTimesheetId(e.target.value)}
+        >
+          <option value="">Select Timesheet</option>
+          {timesheets.map((ts) => (
+            <option key={ts.id} value={ts.id}>
+              {ts.title}
+            </option>
+          ))}
+        </select>
+        <button onClick={handleDeleteTimesheet}>
+          Delete Selected Timesheet
+        </button>
+      </div>
+
+      {/* Add TimesheetItem */}
+      {selectedTimesheetId && (
         <div>
-          <label>Timesheet ID (for update/delete):</label>
+          <h3>Add Timesheet Item</h3>
           <input
             type="text"
-            value={timesheetId}
-            onChange={(e) => setTimesheetId(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
+            placeholder="Date (YYYY-MM-DD)"
+            value={newItem.date}
+            onChange={(e) => setNewItem({ ...newItem, date: e.target.value })}
           />
-        </div>
-        <div>
-          <label>Title:</label>
           <input
             type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
+            placeholder="Time In (HH:mm)"
+            value={newItem.in}
+            onChange={(e) => setNewItem({ ...newItem, in: e.target.value })}
           />
-        </div>
-        <div>
-          <label>Date (YYYY-MM-DD):</label>
           <input
             type="text"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
+            placeholder="Time Out (HH:mm)"
+            value={newItem.out}
+            onChange={(e) => setNewItem({ ...newItem, out: e.target.value })}
           />
-        </div>
-        <div>
-          <label>Time In (HH:mm):</label>
           <input
             type="text"
-            value={timeIn}
-            onChange={(e) => setTimeIn(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
+            placeholder="Title"
+            value={newItem.title}
+            onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
           />
-        </div>
-        <div>
-          <label>Time Out (HH:mm):</label>
-          <input
-            type="text"
-            value={timeOut}
-            onChange={(e) => setTimeOut(e.target.value)}
-            style={{ marginLeft: "10px", marginBottom: "10px" }}
-          />
-        </div>
-        <div>
-          <label>Detail:</label>
           <textarea
-            value={detail}
-            onChange={(e) => setDetail(e.target.value)}
-            style={{
-              marginLeft: "10px",
-              marginBottom: "10px",
-              width: "100%",
-              height: "80px",
-            }}
+            placeholder="Detail"
+            value={newItem.detail}
+            onChange={(e) => setNewItem({ ...newItem, detail: e.target.value })}
           />
+          <button onClick={handleAddItem}>Add Item</button>
         </div>
+      )}
 
-        {/* Buttons for actions */}
-        <div style={{ marginTop: "20px" }}>
-          <button onClick={handleSave} style={{ marginRight: "10px" }}>
-            Save Timesheet
-          </button>
-          <button onClick={handleUpdate} style={{ marginRight: "10px" }}>
-            Update Timesheet
-          </button>
-          <button onClick={handleDelete} style={{ marginRight: "10px" }}>
-            Delete Timesheet
-          </button>
+      {/* Display Timesheet Items */}
+      {selectedTimesheetId && (
+        <div>
+          <h3>Items in Selected Timesheet</h3>
+          <ul>
+            {timesheets
+              .find((ts) => ts.id === selectedTimesheetId)
+              ?.items.map((item: TimesheetItem, idx: number) => {
+                const hoursWorked = item.hoursWorked || 0;
+                return (
+                  <li key={idx}>
+                    {item.title} ({item.date}): {hoursWorked.toFixed(2)} hours
+                  </li>
+                );
+              })}
+          </ul>
         </div>
-      </div>
-
-      {/* Right Column: Firestore Data Display */}
-      <div
-        style={{
-          flex: 1,
-          borderLeft: "1px solid #ccc",
-          paddingLeft: "20px",
-          overflowY: "auto",
-        }}
-      >
-        <h2>Fetched Data</h2>
-        <pre style={{ whiteSpace: "pre-wrap" }}>
-          {JSON.stringify(timesheets, null, 2)}
-        </pre>
-      </div>
+      )}
     </div>
   );
 }
