@@ -38,39 +38,44 @@ export const timesheetActions = {
   DELETE_TIMESHEET: "DELETE_TIMESHEET",
 };
 
-type TimesheetState = {
-  timesheets: Timesheet[];
-};
+export type TimesheetState = { timesheets: Timesheet[] };
 
 type Action =
-  | { type: "SET_TIMESHEETS"; payload: Timesheet[] }
-  | { type: "ADD_TIMESHEET"; payload: Timesheet }
-  | { type: "UPDATE_TIMESHEET"; payload: Timesheet }
-  | { type: "DELETE_TIMESHEET"; payload: string };
+  | { type: string; payload: Timesheet[] }
+  | { type: string; payload: Timesheet }
+  | { type: string; payload: Timesheet }
+  | { type: string; payload: Timesheet };
 
-export const timesheetReducer = (
-  state: TimesheetState,
-  action: Action
-): TimesheetState => {
+export const timesheetReducer = (state: TimesheetState, action: Action) => {
   switch (action.type) {
-    case timesheetActions.SET_TIMESHEETS:
-      return { ...state, timesheets: action.payload };
-    case timesheetActions.ADD_TIMESHEET:
-      return { ...state, timesheets: [...state.timesheets, action.payload] };
-    case timesheetActions.UPDATE_TIMESHEET:
+    case timesheetActions.SET_TIMESHEETS: {
+      const payload = action.payload as Timesheet[];
+      return { ...state, timesheets: payload };
+    }
+    case timesheetActions.ADD_TIMESHEET: {
+      const payload = action.payload as Timesheet;
+      return { ...state, timesheets: [...state.timesheets, payload] };
+    }
+    case timesheetActions.UPDATE_TIMESHEET: {
+      const payload = action.payload as Timesheet;
       return {
         ...state,
-        timesheets: state.timesheets.map((ts) =>
-          ts.id === action.payload.id ? action.payload : ts
-        ),
+        timesheets: state.timesheets.map((ts: Timesheet) => {
+          const updatedTimesheets = ts.id === payload.id ? payload : ts;
+          return updatedTimesheets;
+        }),
       };
-    case timesheetActions.DELETE_TIMESHEET:
+    }
+    case timesheetActions.DELETE_TIMESHEET: {
+      const payload = action.payload as Timesheet;
       return {
         ...state,
-        timesheets: state.timesheets.filter((ts) => ts.id !== action.payload),
+        timesheets: state.timesheets.filter((ts) => ts.id !== payload.id),
       };
-    default:
+    }
+    default: {
       throw new Error(`Unknown action type: ${action.type}`);
+    }
   }
 };
 
@@ -109,14 +114,15 @@ const mapFirestoreDataToTimesheetItem = (doc: any): TimesheetItem => ({
 const getUserTimesheetsCollection = (userId: string) =>
   collection(db, "users", userId, "timesheets");
 
-export const fetchTimesheets = async (dispatch: any, userId: string) => {
+export const fetchTimesheets = async (userId: string) => {
   try {
     const timesheetsCollection = getUserTimesheetsCollection(userId);
     const snapshot = await getDocs(timesheetsCollection);
     const timesheets = snapshot.docs.map((doc) =>
       mapFirestoreDataToTimesheet(doc.data())
     );
-    dispatch({ type: timesheetActions.SET_TIMESHEETS, payload: timesheets });
+    console.log(timesheets);
+    return timesheets;
   } catch (error) {
     console.error("Error fetching timesheets:", error);
   }

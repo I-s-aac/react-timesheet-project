@@ -1,12 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import {
   saveTimesheet,
   deleteTimesheet,
   updateTimesheet,
   fetchTimesheets,
   TimesheetItem,
+  timesheetReducer,
+  TimesheetState,
+  timesheetActions,
 } from "@/services/timesheet";
 import { Timestamp } from "firebase/firestore";
 import { signInWithGoogle } from "@/services/auth";
@@ -15,12 +18,15 @@ import { useAuth } from "@/services/useAuth";
 export default function DevPage() {
   const user = useAuth();
   const userId = user?.uid;
-
-  const [timesheets, setTimesheets] = useState<any[]>([]); // User's timesheets
+  const initialState: TimesheetState = { timesheets: [] };
+  const [timesheets, setTimesheets] = useReducer(
+    timesheetReducer,
+    initialState
+  );
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
 
-  // TimesheetItem inputs
+  // TimesheetItem inputse
   const [newItem, setNewItem] = useState({
     date: "",
     in: "",
@@ -35,7 +41,11 @@ export default function DevPage() {
       try {
         if (userId) {
           const fetchedTimesheets = await fetchTimesheets(userId);
-          setTimesheets(fetchedTimesheets);
+          console.log(fetchedTimesheets);
+          setTimesheets({
+            type: timesheetActions.SET_TIMESHEETS,
+            payload: fetchedTimesheets ?? [],
+          });
         }
       } catch (err) {
         console.error("Failed to fetch timesheets:", err);
@@ -134,6 +144,11 @@ export default function DevPage() {
     <div style={{ padding: "20px" }}>
       <h1>Dev Page</h1>
       <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
+      {userId ? (
+        <h3>you are signed in maybe</h3>
+      ) : (
+        <h3>you are not signed in maybe</h3>
+      )}
 
       {/* Create Timesheet */}
       <div>
@@ -144,13 +159,13 @@ export default function DevPage() {
           value={newTimesheetTitle}
           onChange={(e) => setNewTimesheetTitle(e.target.value)}
         />
-        <button onClick={handleCreateTimesheet}>Create</button>
+        {/* <button onClick={handleCreateTimesheet}>Create</button> */}
       </div>
 
       {/* Select Timesheet */}
       <div>
         <h2>Manage Timesheet</h2>
-        <select
+        {/* <select
           value={selectedTimesheetId}
           onChange={(e) => setSelectedTimesheetId(e.target.value)}
         >
@@ -160,10 +175,10 @@ export default function DevPage() {
               {ts.title}
             </option>
           ))}
-        </select>
-        <button onClick={handleDeleteTimesheet}>
-          Delete Selected Timesheet
-        </button>
+        </select> */}
+        {/* <button onClick={handleDeleteTimesheet}> */}
+        {/* Delete Selected Timesheet
+        </button> */}
       </div>
 
       {/* Add TimesheetItem */}
@@ -199,7 +214,7 @@ export default function DevPage() {
             value={newItem.detail}
             onChange={(e) => setNewItem({ ...newItem, detail: e.target.value })}
           />
-          <button onClick={handleAddItem}>Add Item</button>
+          {/* <button onClick={handleAddItem}>Add Item</button> */}
         </div>
       )}
 
@@ -207,7 +222,7 @@ export default function DevPage() {
       {selectedTimesheetId && (
         <div>
           <h3>Items in Selected Timesheet</h3>
-          <ul>
+          {/* <ul>
             {timesheets
               .find((ts) => ts.id === selectedTimesheetId)
               ?.items.map((item: TimesheetItem, idx: number) => {
@@ -218,7 +233,7 @@ export default function DevPage() {
                   </li>
                 );
               })}
-          </ul>
+          </ul> */}
         </div>
       )}
     </div>

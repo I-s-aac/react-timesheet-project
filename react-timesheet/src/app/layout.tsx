@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Link from "next/link";
+import { useAuth } from "@/services/useAuth";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -44,7 +45,13 @@ export default function RootLayout({
                 <Link href="/timesheets-list">Timesheets</Link>
               </li>
               <li>
-                <Link href="/auth-page">Sign in/Sign up</Link>
+                <Link href="/auth-page">
+                  {/* {userId ? (
+                    <span>You are signed in</span>
+                  ) : (
+                    <span>Sign up</span>
+                  )} */}
+                </Link>
               </li>
               <li>
                 <Link href="/tutorial">Tutorial</Link>
