@@ -7,8 +7,6 @@ import {
   updateDoc,
   deleteDoc,
   Timestamp,
-  query,
-  where,
 } from "firebase/firestore";
 
 export type Timesheet = {

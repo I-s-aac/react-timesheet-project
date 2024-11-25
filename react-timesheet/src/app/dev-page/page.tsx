@@ -11,6 +11,7 @@ import {
   timesheetActions,
   Action,
   saveTimesheetItem,
+  TimesheetItem,
 } from "@/services/timesheet";
 import { Timestamp } from "firebase/firestore";
 import { signInWithGoogle } from "@/services/auth";
@@ -26,7 +27,7 @@ export default function DevPage() {
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
 
-  // TimesheetItem inputse
+  // TimesheetItem inputs
   const [newItem, setNewItem] = useState({
     date: "",
     in: "",
@@ -128,14 +129,6 @@ export default function DevPage() {
           selectedTimesheetId,
           updatedTimesheet
         );
-        console.log(timesheets);
-
-        // // Update the local state
-        // setTimesheets((prevTimesheets) =>
-        //   prevTimesheets.map((ts) =>
-        //     ts.id === selectedTimesheetId ? updatedTimesheet : ts
-        //   )
-        // );
 
         // Reset the new item form
         setNewItem({ date: "", in: "", out: "", title: "", detail: "" });
@@ -248,18 +241,18 @@ export default function DevPage() {
       {selectedTimesheetId && (
         <div>
           <h3>Items in Selected Timesheet</h3>
-          {/* <ul>
+          <ul>
             {timesheets
               .find((ts) => ts.id === selectedTimesheetId)
               ?.items.map((item: TimesheetItem, idx: number) => {
                 const hoursWorked = item.hoursWorked || 0;
                 return (
                   <li key={idx}>
-                    {item.title} ({item.date}): {hoursWorked.toFixed(2)} hours
+                    {JSON.stringify(item)} <br /> <br />
                   </li>
                 );
               })}
-          </ul> */}
+          </ul>
         </div>
       )}
     </div>
