@@ -45,13 +45,7 @@ export default function RootLayout({
                 <Link href="/timesheets-list">Timesheets</Link>
               </li>
               <li>
-                <Link href="/auth-page">
-                  {/* {userId ? (
-                    <span>You are signed in</span>
-                  ) : (
-                    <span>Sign up</span>
-                  )} */}
-                </Link>
+                <Link href="/auth-page"></Link>
               </li>
               <li>
                 <Link href="/tutorial">Tutorial</Link>

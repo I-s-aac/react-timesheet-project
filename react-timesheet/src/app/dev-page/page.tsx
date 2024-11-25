@@ -6,10 +6,11 @@ import {
   deleteTimesheet,
   updateTimesheet,
   fetchTimesheets,
-  TimesheetItem,
   timesheetReducer,
-  TimesheetState,
+  Timesheet,
   timesheetActions,
+  Action,
+  saveTimesheetItem,
 } from "@/services/timesheet";
 import { Timestamp } from "firebase/firestore";
 import { signInWithGoogle } from "@/services/auth";
@@ -18,11 +19,10 @@ import { useAuth } from "@/services/useAuth";
 export default function DevPage() {
   const user = useAuth();
   const userId = user?.uid;
-  const initialState: TimesheetState = { timesheets: [] };
-  const [timesheets, setTimesheets] = useReducer(
-    timesheetReducer,
-    initialState
-  );
+  const initialState: Timesheet[] = [];
+  const [timesheets, setTimesheets] = useReducer<
+    (state: Timesheet[], action: Action) => Timesheet[]
+  >(timesheetReducer, initialState);
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
 
@@ -67,8 +67,7 @@ export default function DevPage() {
     };
     try {
       if (userId) {
-        const id = await saveTimesheet(userId, newTimesheet);
-        setTimesheets([...timesheets, { ...newTimesheet, id }]);
+        await saveTimesheet(setTimesheets, userId, newTimesheet);
         setNewTimesheetTitle("");
       }
     } catch (err) {
@@ -79,10 +78,13 @@ export default function DevPage() {
   // Delete selected timesheet
   const handleDeleteTimesheet = async () => {
     if (!selectedTimesheetId) return alert("Select a timesheet to delete!");
+
     try {
       if (userId) {
-        await deleteTimesheet(userId, selectedTimesheetId);
-        setTimesheets(timesheets.filter((ts) => ts.id !== selectedTimesheetId));
+        // Call the function to delete the timesheet from the database
+        await deleteTimesheet(setTimesheets, userId, selectedTimesheetId);
+
+        // Clear the selected timesheet from the state
         setSelectedTimesheetId("");
       }
     } catch (err) {
@@ -90,7 +92,7 @@ export default function DevPage() {
     }
   };
 
-  // Add item to selected timesheet
+  // Add item to selected timesheet (updated for new data structure)
   const handleAddItem = async () => {
     if (!selectedTimesheetId) return alert("Select a timesheet first!");
     const timesheet = timesheets.find((ts) => ts.id === selectedTimesheetId);
@@ -103,20 +105,39 @@ export default function DevPage() {
       updatedAt: Timestamp.now(),
     };
 
-    const updatedTimesheet = {
-      ...timesheet,
-      items: [...timesheet.items, itemWithHours],
-      hoursWorked: timesheet.hoursWorked + itemWithHours.hoursWorked,
-    };
-
     try {
       if (userId) {
-        await updateTimesheet(userId, selectedTimesheetId, updatedTimesheet);
-        setTimesheets((prevTimesheets) =>
-          (prevTimesheets ?? []).map((ts) =>
-            ts.id === selectedTimesheetId ? updatedTimesheet : ts
-          )
+        // Save the item to Firestore under the timesheet's subcollection
+        const savedItem = await saveTimesheetItem(
+          userId,
+          selectedTimesheetId,
+          itemWithHours
         );
+
+        // Update the timesheet locally with the new item and the updated total hours worked
+        const updatedTimesheet = {
+          ...timesheet,
+          items: [...timesheet.items, savedItem], // Add the saved item (with ID) to the timesheet
+          hoursWorked: timesheet.hoursWorked + savedItem.hoursWorked, // Update the total hours worked
+        };
+
+        // Update the timesheet in Firestore to reflect the new item
+        await updateTimesheet(
+          setTimesheets,
+          userId,
+          selectedTimesheetId,
+          updatedTimesheet
+        );
+        console.log(timesheets);
+
+        // // Update the local state
+        // setTimesheets((prevTimesheets) =>
+        //   prevTimesheets.map((ts) =>
+        //     ts.id === selectedTimesheetId ? updatedTimesheet : ts
+        //   )
+        // );
+
+        // Reset the new item form
         setNewItem({ date: "", in: "", out: "", title: "", detail: "" });
       }
     } catch (err) {
@@ -159,26 +180,31 @@ export default function DevPage() {
           value={newTimesheetTitle}
           onChange={(e) => setNewTimesheetTitle(e.target.value)}
         />
-        {/* <button onClick={handleCreateTimesheet}>Create</button> */}
+        {<button onClick={handleCreateTimesheet}>Create</button>}
       </div>
 
       {/* Select Timesheet */}
       <div>
-        <h2>Manage Timesheet</h2>
-        {/* <select
-          value={selectedTimesheetId}
-          onChange={(e) => setSelectedTimesheetId(e.target.value)}
-        >
-          <option value="">Select Timesheet</option>
-          {timesheets.map((ts) => (
-            <option key={ts.id} value={ts.id}>
-              {ts.title}
-            </option>
-          ))}
-        </select> */}
-        {/* <button onClick={handleDeleteTimesheet}> */}
-        {/* Delete Selected Timesheet
-        </button> */}
+        <h2>Manage Timesheet</h2>{" "}
+        <button onClick={() => handleAddItem()}>test adding an item</button>
+        {
+          <select
+            value={selectedTimesheetId}
+            onChange={(e) => setSelectedTimesheetId(e.target.value)}
+          >
+            <option value="">Select Timesheet</option>
+            {timesheets.map((ts) => (
+              <option key={ts.id} value={ts.id}>
+                {ts.title}
+              </option>
+            ))}
+          </select>
+        }
+        {
+          <button onClick={handleDeleteTimesheet}>
+            Delete Selected Timesheet
+          </button>
+        }
       </div>
 
       {/* Add TimesheetItem */}
