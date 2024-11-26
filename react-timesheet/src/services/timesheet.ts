@@ -15,8 +15,8 @@ export type Timesheet = {
   detail?: string;
   hoursWorked: number;
   items: TimesheetItem[];
-  createdAt?: Timestamp;
-  updatedAt?: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
 };
 
 export type TimesheetItem = {
@@ -62,14 +62,15 @@ export const timesheetReducer = (state: Timesheet[], action: Action) => {
   }
 };
 
-const calculateHoursWorked = (inTime: string, outTime: string): number => {
+export const calculateHoursWorked = (inTime: string, outTime: string): number => {
   const inDate = new Date(`1970-01-01T${inTime}:00Z`);
   const outDate = new Date(`1970-01-01T${outTime}:00Z`);
   if (outDate < inDate) outDate.setDate(outDate.getDate() + 1);
   return (outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60);
 };
 
-const calculateTotalHours = (items: TimesheetItem[]): number =>
+
+export const calculateTotalHours = (items: TimesheetItem[]): number =>
   items.reduce((total, item) => total + (item.hoursWorked || 0), 0);
 
 const getUserTimesheetsCollection = (userId: string) =>

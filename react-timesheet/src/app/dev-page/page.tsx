@@ -42,7 +42,6 @@ export default function DevPage() {
       try {
         if (userId) {
           const fetchedTimesheets = await fetchTimesheets(userId);
-          console.log(fetchedTimesheets);
           setTimesheets({
             type: timesheetActions.SET_TIMESHEETS,
             payload: fetchedTimesheets ?? [],

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Link from "next/link";
-import { useAuth } from "@/services/useAuth";
+import Navigation from "../components/Navigation";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -28,34 +28,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased p-0 m-0 h-[100vh]`}
       >
-        <div style={{ display: "flex", height: "100vh" }}>
-          <nav
-            style={{
-              width: "200px",
-              padding: "20px",
-              // background: "#f4f4f4",
-              borderRight: "1px solid #ddd",
-            }}
-          >
-            <h2>contents TBD</h2>
-            <ul className="ml-3">
-              <li>
-                <Link href="/timesheets-list">Timesheets</Link>
-              </li>
-              <li>
-                <Link href="/auth-page"></Link>
-              </li>
-              <li>
-                <Link href="/tutorial">Tutorial</Link>
-              </li>
-              <li>
-                <Link href="/dev-page">Dev Stuff</Link>
-              </li>
-            </ul>
-          </nav>
-          <main style={{ flex: 1, padding: "20px" }}>
+        <div className="flex sm:flex-col">
+          <Navigation />
+
+          <main>
             {children} {/* Renders the page content */}
           </main>
         </div>

@@ -17,12 +17,12 @@
   textarea {
     color: #ccc; /* Adjust to a lighter shade for readability on dark backgrounds */
     background-color: transparent; /* Optional: Ensure the background doesn’t clash */
-    border: 1px solid #444; /* Optional: Subtle border for visibility */
+    border: 1px solid #979797; /* Optional: Subtle border for visibility */
   }
   /* Make placeholder text darker */
   input::placeholder,
   textarea::placeholder {
-    color: #444444; /* Adjust this to your preferred darker shade */
+    color: #939393; /* Adjust this to your preferred darker shade */
     opacity: 1; /* Ensure the color is not washed out */
   }
 
