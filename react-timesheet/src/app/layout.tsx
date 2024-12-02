@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import Link from "next/link";
 import Navigation from "../components/Navigation";
+import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,13 +30,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased p-0 m-0 h-[100vh]`}
       >
-        <div className="flex sm:flex-col">
-          <Navigation />
+        <AppRouterCacheProvider>
+          <div className="flex">
+            <Navigation />
 
-          <main>
-            {children} {/* Renders the page content */}
-          </main>
-        </div>
+            <main>
+              {children} {/* Renders the page content */}
+            </main>
+          </div>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );

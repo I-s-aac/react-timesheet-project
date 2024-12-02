@@ -154,7 +154,7 @@ export default function DevPage() {
   };
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="md:ps-5">
       <h1>Dev Page</h1>
       <button onClick={handleSignInWithGoogle}>Sign in with Google</button>
       {userId ? (

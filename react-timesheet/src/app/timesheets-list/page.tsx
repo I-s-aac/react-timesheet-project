@@ -92,7 +92,7 @@ export default function Page() {
   };
 
   return (
-    <>
+    <div className="md:ps-5">
       <div>
         {/* top bar for adding timesheets */}
         <h1>list of timesheets goes here</h1>
@@ -115,18 +115,19 @@ export default function Page() {
       <ul>
         {timesheets.map((t, idx) => {
           return (
-            <li key={idx} className="flex justify-center items-center">
-              <h1 className="text-2xl">{t.title}</h1>
-              <div>hours worked: {t.hoursWorked}</div>
-              <div>entries: {t.items.length}</div>
-              <div>
-                last updated at: {t.updatedAt.toDate().toLocaleString()}
+            <li key={idx} className="flex flex-col justify-center items-center">
+              <div className="flex justify-center items-center">
+                {/* title and hours */}
+                <h1 className="text-2xl">{t.title}</h1>
+                <div>Hours: {t.hoursWorked}</div>
               </div>
-              <div>date created: {t.createdAt.toDate().toLocaleString()}</div>
+              <div>entries: {t.items.length}</div>
+              <div>Updated: {t.updatedAt.toDate().toLocaleString()}</div>
+              <div>Created: {t.createdAt.toDate().toLocaleString()}</div>
             </li>
           );
         })}
       </ul>
-    </>
+    </div>
   );
 }
