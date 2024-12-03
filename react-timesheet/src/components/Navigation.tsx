@@ -4,19 +4,13 @@ import Link from "next/link";
 import {
   Drawer,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
   Typography,
   useMediaQuery,
   useTheme,
+  Box,
+  Button,
 } from "@mui/material";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-
-// Reusable wrapper for Next.js Link
-const NextLink = React.forwardRef(function NextLink(props, ref) {
-  return <Link {...props} ref={ref} />;
-});
 
 export default function NavigationDrawer() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -30,29 +24,49 @@ export default function NavigationDrawer() {
   };
 
   const drawerContent = (
-    <div style={{ padding: "20px", width: "200px" }}>
-      <Typography variant="h6" style={{ marginBottom: "20px" }}>
+    <Box sx={{ padding: "20px", width: "200px" }}>
+      <Typography variant="h6" sx={{ marginBottom: "20px" }}>
         Contents TBD
       </Typography>
-      <List>
-        <ListItem button component={NextLink} href="/timesheets-list">
-          <ListItemText primary="Timesheets" />
-        </ListItem>
-        <ListItem button component={NextLink} href="/auth-page">
-          <ListItemText primary="Auth Page" />
-        </ListItem>
-        <ListItem button component={NextLink} href="/tutorial">
-          <ListItemText primary="Tutorial" />
-        </ListItem>
-        <ListItem button component={NextLink} href="/dev-page">
-          <ListItemText primary="Dev Stuff" />
-        </ListItem>
-      </List>
-    </div>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        <Button
+          component={Link}
+          href="/timesheets-list"
+          variant="text"
+          sx={{ textTransform: "none" }}
+        >
+          Timesheets
+        </Button>
+        <Button
+          component={Link}
+          href="/auth-page"
+          variant="text"
+          sx={{ textTransform: "none" }}
+        >
+          Auth Page
+        </Button>
+        <Button
+          component={Link}
+          href="/tutorial"
+          variant="text"
+          sx={{ textTransform: "none" }}
+        >
+          Tutorial
+        </Button>
+        <Button
+          component={Link}
+          href="/dev-page"
+          variant="text"
+          sx={{ textTransform: "none" }}
+        >
+          Dev Stuff
+        </Button>
+      </Box>
+    </Box>
   );
 
   return (
-    <div style={{ width: isLargeScreen ? "200px" : "auto" }}>
+    <Box sx={{ width: isLargeScreen ? "200px" : "auto" }}>
       {!isLargeScreen && (
         <IconButton color="error" onClick={toggleDrawer}>
           <MenuOutlinedIcon />
@@ -69,6 +83,6 @@ export default function NavigationDrawer() {
       >
         {drawerContent}
       </Drawer>
-    </div>
+    </Box>
   );
 }

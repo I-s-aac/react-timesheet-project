@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/services/useAuth";
 import { useReducer, useState, useEffect } from "react";
 import { Timestamp } from "firebase/firestore";
+import TimesheetElement from "@/components/TimesheetElement";
 
 export default function Page() {
   const user = useAuth();
@@ -114,18 +115,7 @@ export default function Page() {
       </div>
       <ul>
         {timesheets.map((t, idx) => {
-          return (
-            <li key={idx} className="flex flex-col justify-center items-center">
-              <div className="flex justify-center items-center">
-                {/* title and hours */}
-                <h1 className="text-2xl">{t.title}</h1>
-                <div>Hours: {t.hoursWorked}</div>
-              </div>
-              <div>entries: {t.items.length}</div>
-              <div>Updated: {t.updatedAt.toDate().toLocaleString()}</div>
-              <div>Created: {t.createdAt.toDate().toLocaleString()}</div>
-            </li>
-          );
+          return <TimesheetElement key={idx} timesheet={t} />;
         })}
       </ul>
     </div>
