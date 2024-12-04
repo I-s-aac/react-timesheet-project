@@ -5,24 +5,18 @@ import {
   fetchTimesheets,
   updateTimesheet,
   deleteTimesheet,
-  timesheetReducer,
-  Timesheet,
-  Action,
   calculateHoursWorked,
   timesheetActions,
 } from "@/services/timesheet";
-import { useAuth } from "@/services/useAuth";
-import { useReducer, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Timestamp } from "firebase/firestore";
 import TimesheetElement from "@/components/TimesheetElement";
+import { useTimesheetContext } from "@/contexts/TimesheetContext";
+import { useUserContext } from "@/contexts/UserContext";
 
 export default function Page() {
-  const user = useAuth();
-  const userId = user?.uid;
-  const initialState: Timesheet[] = [];
-  const [timesheets, setTimesheets] = useReducer<
-    (state: Timesheet[], action: Action) => Timesheet[]
-  >(timesheetReducer, initialState);
+  const { userId } = useUserContext();
+  const { timesheets, setTimesheets } = useTimesheetContext();
 
   const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
@@ -35,25 +29,6 @@ export default function Page() {
     title: "",
     detail: "",
   });
-
-  // Fetch timesheets on userId change
-  useEffect(() => {
-    const fetchUserTimesheets = async () => {
-      try {
-        if (userId) {
-          const fetchedTimesheets = await fetchTimesheets(userId);
-          setTimesheets({
-            type: timesheetActions.SET_TIMESHEETS,
-            payload: fetchedTimesheets ?? [],
-          });
-        }
-      } catch (err) {
-        console.error("Failed to fetch timesheets:", err);
-      }
-    };
-
-    fetchUserTimesheets();
-  }, [userId]);
 
   // Save new timesheet
   const handleCreateTimesheet = async () => {

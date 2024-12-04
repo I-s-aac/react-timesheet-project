@@ -53,14 +53,6 @@ export default function NavigationDrawer() {
         >
           Tutorial
         </Button>
-        <Button
-          component={Link}
-          href="/dev-page"
-          variant="text"
-          sx={{ textTransform: "none" }}
-        >
-          Dev Stuff
-        </Button>
       </Box>
     </Box>
   );

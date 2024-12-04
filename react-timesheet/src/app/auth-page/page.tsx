@@ -7,17 +7,20 @@ import {
   registerWithEmailPassword,
   logout,
 } from "@/services/auth";
+import { useUserContext } from "@/contexts/UserContext";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const { setUserId } = useUserContext();
 
   const handleSignInWithGoogle = async () => {
     try {
       const user = await signInWithGoogle();
-      console.log("Signed in with Google:", user);
+      setUserId(user.uid);
     } catch (error) {
+      console.error(error);
       setError("Error signing in with Google");
     }
   };

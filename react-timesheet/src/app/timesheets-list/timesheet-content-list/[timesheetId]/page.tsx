@@ -1,3 +1,11 @@
+"use client";
+
+import { useParams } from "next/navigation";
+
 export default function Page() {
-  return <h1>list of timesheet items goes here</h1>;
+  const { timesheetId } = useParams();
+
+  console.log(timesheetId);
+
+  return <div></div>;
 }
