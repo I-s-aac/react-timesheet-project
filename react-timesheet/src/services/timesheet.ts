@@ -1,3 +1,4 @@
+import { useUserContext } from "@/contexts/UserContext";
 import { db } from "./firebase";
 import {
   collection,
@@ -21,7 +22,6 @@ export type Timesheet = {
 
 export type TimesheetItem = {
   id?: string;
-  date: string;
   in: string;
   out: string;
   detail?: string;
@@ -199,13 +199,11 @@ export const deleteTimesheet = async (
 };
 
 export const saveTimesheetItem = async (
-  userId: string,
   timesheetId: string,
   item: TimesheetItem
 ) => {
+  const { userId } = useUserContext();
   try {
-    const test = item;
-    console.log(item);
     const itemsCollection = collection(
       db,
       "users",

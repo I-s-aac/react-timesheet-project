@@ -58,7 +58,7 @@ export default function NavigationDrawer() {
   );
 
   return (
-    <Box sx={{ width: isLargeScreen ? "200px" : "auto" }}>
+    <Box sx={{ width: isLargeScreen ? "200px" : "auto"}} className="md:me-5">
       {!isLargeScreen && (
         <IconButton color="error" onClick={toggleDrawer}>
           <MenuOutlinedIcon />

@@ -68,7 +68,7 @@ export default function Page() {
   };
 
   return (
-    <div className="md:ps-5">
+    <div>
       <div>
         {/* top bar for adding timesheets */}
         <h1>list of timesheets goes here</h1>

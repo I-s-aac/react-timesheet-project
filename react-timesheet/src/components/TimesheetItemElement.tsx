@@ -1,25 +1,29 @@
 import React from "react";
 import { Timesheet } from "@/services/timesheet";
+import { useTimesheetContext } from "@/contexts/TimesheetContext";
 
 type TimesheetItemElementProps = {
-  timesheet: Timesheet;
+  timesheet?: Timesheet;
+  timesheetId?: string;
 };
 // work in progress, modify later
 const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
   timesheet,
+  timesheetId,
 }) => {
-  return (
-    <li className="flex flex-col justify-center items-center">
-      <div className="flex justify-center items-center">
-        {/* title and hours */}
-        <h1 className="text-2xl">{timesheet.title}</h1>
-        <div>Hours: {timesheet.hoursWorked}</div>
-      </div>
-      <div>entries: {timesheet.items.length}</div>
-      <div>Updated: {timesheet.updatedAt.toDate().toLocaleString()}</div>
-      <div>Created: {timesheet.createdAt.toDate().toLocaleString()}</div>
-    </li>
-  );
+  const { timesheets } = useTimesheetContext();
+  if (timesheetId) {
+    timesheet = timesheets.find((ts) => ts.id === timesheetId);
+  }
+  if (timesheet) {
+    const items = timesheet.items;
+    console.log(items);
+    return (
+      <li className="flex flex-col justify-center items-center">
+        work in progress
+      </li>
+    );
+  }
 };
 
 export default TimesheetItemElement;
