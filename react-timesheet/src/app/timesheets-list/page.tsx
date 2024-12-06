@@ -70,8 +70,6 @@ export default function Page() {
   return (
     <div>
       <div>
-        {/* top bar for adding timesheets */}
-        <h1>list of timesheets goes here</h1>
         <label>
           Timesheet Title:{" "}
           <input

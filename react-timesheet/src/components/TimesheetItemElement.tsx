@@ -17,12 +17,20 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
   }
   if (timesheet) {
     const items = timesheet.items;
-    console.log(items);
-    return (
-      <li className="flex flex-col justify-center items-center">
-        work in progress
-      </li>
-    );
+    return items.map((item, index) => {
+      return (
+        <li key={index} className="flex flex-col justify-center items-center mb-3">
+          <div className="flex justify-center items-center">
+            <h4 className="text-xl">{item.title}</h4>
+            <span>{item.detail}</span>
+          </div>
+          <div>
+            <span>{item.in.toDate().toISOString()}</span>
+            <span>{/* item.out.toDate().toString() */}</span>
+          </div>
+        </li>
+      );
+    });
   }
 };
 

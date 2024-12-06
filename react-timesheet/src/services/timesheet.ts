@@ -22,8 +22,8 @@ export type Timesheet = {
 
 export type TimesheetItem = {
   id?: string;
-  in: string;
-  out: string;
+  in: Timestamp;
+  out: Timestamp;
   detail?: string;
   title: string;
   hoursWorked?: number;
@@ -63,11 +63,12 @@ export const timesheetReducer = (state: Timesheet[], action: Action) => {
 };
 
 export const calculateHoursWorked = (
-  inTime: string,
-  outTime: string
+  inTime: Timestamp,
+  outTime: Timestamp
 ): number => {
-  const inDate = new Date(`1970-01-01T${inTime}:00Z`);
-  const outDate = new Date(`1970-01-01T${outTime}:00Z`);
+  console.log(inTime.toDate());
+  const inDate = inTime.toDate();
+  const outDate = outTime.toDate();
   if (outDate < inDate) outDate.setDate(outDate.getDate() + 1);
   return (outDate.getTime() - inDate.getTime()) / (1000 * 60 * 60);
 };
@@ -199,10 +200,10 @@ export const deleteTimesheet = async (
 };
 
 export const saveTimesheetItem = async (
+  userId: string,
   timesheetId: string,
   item: TimesheetItem
 ) => {
-  const { userId } = useUserContext();
   try {
     const itemsCollection = collection(
       db,
@@ -228,12 +229,12 @@ export const saveTimesheetItem = async (
 };
 
 export const updateTimesheetItem = async (
-  userId: string,
   timesheetId: string,
   itemId: string,
   updatedItem: Partial<TimesheetItem>
 ) => {
   try {
+    const { userId } = useUserContext();
     const itemDoc = doc(
       db,
       "users",
@@ -260,11 +261,11 @@ export const updateTimesheetItem = async (
 };
 
 export const deleteTimesheetItem = async (
-  userId: string,
   timesheetId: string,
   itemId: string
 ) => {
   try {
+    const { userId } = useUserContext();
     const itemDoc = doc(
       db,
       "users",

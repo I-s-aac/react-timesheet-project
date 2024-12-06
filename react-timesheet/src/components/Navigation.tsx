@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Drawer,
   IconButton,
-  Typography,
   useMediaQuery,
   useTheme,
   Box,
@@ -14,6 +13,7 @@ import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 
 export default function NavigationDrawer() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const width = "150px";
 
   // Use MUI theme to detect screen size
   const theme = useTheme();
@@ -24,10 +24,7 @@ export default function NavigationDrawer() {
   };
 
   const drawerContent = (
-    <Box sx={{ padding: "20px", width: "200px" }}>
-      <Typography variant="h6" sx={{ marginBottom: "20px" }}>
-        Contents TBD
-      </Typography>
+    <Box sx={{ padding: "20px", width: width }}>
       <Box sx={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         <Button
           component={Link}
@@ -58,7 +55,7 @@ export default function NavigationDrawer() {
   );
 
   return (
-    <Box sx={{ width: isLargeScreen ? "200px" : "auto"}} className="md:me-5">
+    <Box sx={{ width: isLargeScreen ? width : "auto" }} className="md:me-5">
       {!isLargeScreen && (
         <IconButton color="error" onClick={toggleDrawer}>
           <MenuOutlinedIcon />
