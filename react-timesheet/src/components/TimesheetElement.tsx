@@ -19,6 +19,11 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
     timesheet = timesheets.find((ts) => ts.id === timesheetId);
   }
   if (timesheet) {
+    /* planned functionality
+    allow editing title, validate with regex
+    make draggable
+    delete button, with confirmation window
+    */
     return (
       <li className="flex flex-col justify-center items-center">
         <div className="flex justify-center items-center">

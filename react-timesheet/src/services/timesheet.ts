@@ -1,4 +1,3 @@
-import { useUserContext } from "@/contexts/UserContext";
 import { db } from "./firebase";
 import {
   collection,
@@ -229,12 +228,12 @@ export const saveTimesheetItem = async (
 };
 
 export const updateTimesheetItem = async (
+  userId: string,
   timesheetId: string,
   itemId: string,
   updatedItem: Partial<TimesheetItem>
 ) => {
   try {
-    const { userId } = useUserContext();
     const itemDoc = doc(
       db,
       "users",
@@ -261,11 +260,11 @@ export const updateTimesheetItem = async (
 };
 
 export const deleteTimesheetItem = async (
+  userId: string,
   timesheetId: string,
   itemId: string
 ) => {
   try {
-    const { userId } = useUserContext();
     const itemDoc = doc(
       db,
       "users",

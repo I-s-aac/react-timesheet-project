@@ -10,10 +10,16 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function Page() {
+  /* planned functionality/stuff
+    clock in/clock out:
+        automatically update the last item in the list, or add one if the last one is already full (has a valid time for in and out)
+    items are listed in a column of rectangles or something
+    the timesheet at the top is displayed the same way, but bigger or something
+  */
   const { timesheetId } = useParams();
   const { userId } = useUserContext();
-  const [title, setTitle] = useState<string>("");
-  const [detail, setDetail] = useState<string>("");
+  const [title, setTitle] = useState<string>("Edit");
+  const [detail, setDetail] = useState<string>("Edit");
 
   // create a timesheet item
   const handleCreateTimesheetItem = async () => {
@@ -32,34 +38,35 @@ export default function Page() {
     }
   };
 
+  const clockIn = () => {};
+
+  const clockOut = () => {};
+
   return (
     <>
       <div className="flex flex-col">
         <Link href="../">go back</Link>
         <div>
-          <h1>Add new entry:</h1>
-          <label>
-            title
-            <input
-              onChange={(e) => {
-                setTitle(e.target.value);
-              }}
-            />
-          </label>
-          <label>
-            detail
-            <input
-              onChange={(e) => {
-                setDetail(e.target.value);
-              }}
-            />
-          </label>
           <button
             onClick={() => {
               handleCreateTimesheetItem();
             }}
           >
-            Add
+            Add new entry
+          </button>
+          <button
+            onClick={() => {
+              clockIn();
+            }}
+          >
+            Clock in
+          </button>
+          <button
+            onClick={() => {
+              clockOut();
+            }}
+          >
+            Clock out
           </button>
         </div>
       </div>

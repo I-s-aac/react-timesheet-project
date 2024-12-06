@@ -1,13 +1,5 @@
 "use client";
-import {
-  saveTimesheet,
-  saveTimesheetItem,
-  fetchTimesheets,
-  updateTimesheet,
-  deleteTimesheet,
-  calculateHoursWorked,
-  timesheetActions,
-} from "@/services/timesheet";
+import { saveTimesheet, deleteTimesheet } from "@/services/timesheet";
 import { useState, useEffect } from "react";
 import { Timestamp } from "firebase/firestore";
 import TimesheetElement from "@/components/TimesheetElement";
@@ -15,6 +7,10 @@ import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import { useUserContext } from "@/contexts/UserContext";
 
 export default function Page() {
+  /* planned functionality/stuff
+    drag and drop to re-order timesheets
+    timesheets are listed in a column of rectangles or something
+  */
   const { userId } = useUserContext();
   const { timesheets, setTimesheets } = useTimesheetContext();
 
