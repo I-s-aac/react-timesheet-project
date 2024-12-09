@@ -1,5 +1,5 @@
 import React from "react";
-import { deleteTimesheetItem, Timesheet } from "@/services/timesheet";
+import { deleteTimesheetItem } from "@/services/timesheet";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import { useUserContext } from "@/contexts/UserContext";
 
@@ -18,7 +18,7 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
   if (timesheet && timesheetId) {
     /* planned functionality 
       edit mode to allow editing title, detail, in, and out, use regex to validate
-      delete button, with confirmation window
+      delete button, with undo popup
     */
 
     const handleDeleteTimesheetItem = async (itemId: string) => {

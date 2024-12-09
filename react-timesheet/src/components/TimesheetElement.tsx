@@ -3,6 +3,7 @@ import { deleteTimesheet, Timesheet } from "@/services/timesheet";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import Link from "next/link";
 import { useUserContext } from "@/contexts/UserContext";
+import { useUndoContext } from "@/contexts/UndoContext";
 
 type TimesheetElementProps = {
   timesheet?: Timesheet;
@@ -17,6 +18,7 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
 }) => {
   const { userId } = useUserContext();
   const { timesheets, setTimesheets } = useTimesheetContext();
+  const { addToUndoStack } = useUndoContext();
 
   if (timesheetId) {
     timesheet = timesheets.find((ts) => ts.id === timesheetId);
@@ -25,14 +27,19 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
     /* planned functionality
     allow editing title, validate with regex
     make draggable
-    delete button, with confirmation window
+    delete button, with undo popup
     */
     // Delete selected timesheet
     const handleDeleteTimesheet = async (timesheetId: string) => {
       try {
         if (userId) {
           // Call the function to delete the timesheet from the database
-          await deleteTimesheet(setTimesheets, userId, timesheetId);
+          await deleteTimesheet(
+            setTimesheets,
+            addToUndoStack,
+            userId,
+            timesheetId
+          );
         }
       } catch (err) {
         console.error("Error deleting timesheet:", err);

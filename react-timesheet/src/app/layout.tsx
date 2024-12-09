@@ -5,6 +5,7 @@ import Navigation from "../components/Navigation";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { TimesheetProvider } from "@/contexts/TimesheetContext";
 import { UserProvider } from "@/contexts/UserContext";
+import { UndoProvider } from "@/contexts/UndoContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -35,13 +36,15 @@ export default function RootLayout({
         <AppRouterCacheProvider>
           <UserProvider>
             <TimesheetProvider>
-              <div className="flex">
-                <Navigation />
+              <UndoProvider>
+                <div className="flex">
+                  <Navigation />
 
-                <main>
-                  {children} {/* Renders the page content */}
-                </main>
-              </div>
+                  <main>
+                    {children} {/* Renders the page content */}
+                  </main>
+                </div>
+              </UndoProvider>
             </TimesheetProvider>
           </UserProvider>
         </AppRouterCacheProvider>

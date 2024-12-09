@@ -39,7 +39,7 @@ export const timesheetActions = {
   ADD_TIMESHEET_ITEM: "ADD_TIMESHEET_ITEM",
   UPDATE_TIMESHEET_ITEM: "UPDATE_TIMESHEET_ITEM",
   DELETE_TIMESHEET_ITEM: "DELETE_TIMESHEET_ITEM",
-};
+} as const;
 
 export type Action =
   | { type: string; payload: Timesheet[] }
@@ -63,20 +63,18 @@ export type Action =
 export const timesheetReducer = (state: Timesheet[], action: Action) => {
   switch (action.type) {
     case timesheetActions.SET_TIMESHEETS: {
-      return action.payload as Timesheet[];
+      return action.payload;
     }
     case timesheetActions.ADD_TIMESHEET: {
-      return [...state, action.payload as Timesheet];
+      return [...state, action.payload];
     }
     case timesheetActions.UPDATE_TIMESHEET: {
-      return state.map((ts) =>
-        ts.id === (action.payload as Timesheet).id
-          ? (action.payload as Timesheet)
-          : ts
-      );
+      const timesheet = action.payload as Timesheet;
+      return state.map((ts) => (ts.id === timesheet.id ? action.payload : ts));
     }
     case timesheetActions.DELETE_TIMESHEET: {
-      return state.filter((ts) => ts.id !== (action.payload as string));
+      const timesheetId = action.payload;
+      return state.filter((ts) => ts.id !== timesheetId);
     }
     case timesheetActions.ADD_TIMESHEET_ITEM: {
       const { timesheetId, newItem } = action.payload as {
@@ -261,6 +259,7 @@ export const updateTimesheet = async (
 
 export const deleteTimesheet = async (
   dispatch: any,
+  addToUndoStack: any,
   userId: string,
   id: string
 ) => {
