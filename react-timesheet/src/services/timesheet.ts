@@ -7,24 +7,25 @@ import {
   updateDoc,
   deleteDoc,
   Timestamp,
+  setDoc,
 } from "firebase/firestore";
 
 export type Timesheet = {
-  id?: string;
+  id: string;
   title: string;
-  detail?: string;
   hoursWorked: number;
   items: TimesheetItem[];
   createdAt: Timestamp;
   updatedAt: Timestamp;
+  detail?: string;
 };
 
 export type TimesheetItem = {
-  id?: string;
+  id: string;
   in: Timestamp;
   out: Timestamp;
-  detail?: string;
   title: string;
+  detail?: string;
   hoursWorked?: number;
   createdAt?: Timestamp;
   updatedAt?: Timestamp;
@@ -35,29 +36,105 @@ export const timesheetActions = {
   ADD_TIMESHEET: "ADD_TIMESHEET",
   UPDATE_TIMESHEET: "UPDATE_TIMESHEET",
   DELETE_TIMESHEET: "DELETE_TIMESHEET",
+  ADD_TIMESHEET_ITEM: "ADD_TIMESHEET_ITEM",
+  UPDATE_TIMESHEET_ITEM: "UPDATE_TIMESHEET_ITEM",
+  DELETE_TIMESHEET_ITEM: "DELETE_TIMESHEET_ITEM",
 };
 
 export type Action =
   | { type: string; payload: Timesheet[] }
   | { type: string; payload: Timesheet }
-  | { type: string; payload: string };
+  | { type: string; payload: string }
+  | {
+      type: string;
+      payload: {
+        timesheetId: string;
+        newItem: TimesheetItem;
+      };
+    }
+  | {
+      type: string;
+      payload: {
+        timesheetId: string;
+        itemId: string;
+      };
+    };
 
 export const timesheetReducer = (state: Timesheet[], action: Action) => {
   switch (action.type) {
-    case timesheetActions.SET_TIMESHEETS:
+    case timesheetActions.SET_TIMESHEETS: {
       return action.payload as Timesheet[];
-    case timesheetActions.ADD_TIMESHEET:
+    }
+    case timesheetActions.ADD_TIMESHEET: {
       return [...state, action.payload as Timesheet];
-    case timesheetActions.UPDATE_TIMESHEET:
+    }
+    case timesheetActions.UPDATE_TIMESHEET: {
       return state.map((ts) =>
         ts.id === (action.payload as Timesheet).id
           ? (action.payload as Timesheet)
           : ts
       );
-    case timesheetActions.DELETE_TIMESHEET:
+    }
+    case timesheetActions.DELETE_TIMESHEET: {
       return state.filter((ts) => ts.id !== (action.payload as string));
-    default:
+    }
+    case timesheetActions.ADD_TIMESHEET_ITEM: {
+      const { timesheetId, newItem } = action.payload as {
+        timesheetId: string;
+        newItem: TimesheetItem;
+      };
+
+      return state.map((ts) => {
+        if (ts.id === timesheetId) {
+          return {
+            ...ts,
+            items: [...ts.items, newItem],
+            updatedAt: Timestamp.fromDate(new Date()),
+          };
+        }
+        return ts;
+      });
+    }
+    case timesheetActions.DELETE_TIMESHEET_ITEM: {
+      const { timesheetId, itemId } = action.payload as {
+        timesheetId: string;
+        itemId: string;
+      };
+      return state.map((ts) => {
+        if (ts.id === timesheetId) {
+          return {
+            ...ts,
+            items: ts.items.filter((item) => {
+              return item.id !== itemId;
+            }),
+          };
+        }
+        return ts;
+      });
+    }
+    case timesheetActions.UPDATE_TIMESHEET_ITEM: {
+      const { timesheetId, newItem } = action.payload as {
+        timesheetId: string;
+        newItem: TimesheetItem;
+      };
+      return state.map((ts) => {
+        if (ts.id === timesheetId) {
+          return {
+            ...ts,
+            items: ts.items.map((item) => {
+              if (item.id === newItem.id) {
+                return newItem;
+              }
+              return item;
+            }),
+          };
+        }
+        return ts;
+      });
+    }
+    default: {
       throw new Error(`Unknown action type: ${action.type}`);
+    }
   }
 };
 
@@ -65,7 +142,6 @@ export const calculateHoursWorked = (
   inTime: Timestamp,
   outTime: Timestamp
 ): number => {
-  console.log(inTime.toDate());
   const inDate = inTime.toDate();
   const outDate = outTime.toDate();
   if (outDate < inDate) outDate.setDate(outDate.getDate() + 1);
@@ -116,13 +192,17 @@ export const saveTimesheet = async (
 ) => {
   try {
     const timesheetsCollection = getUserTimesheetsCollection(userId);
+    const docRef = await doc(timesheetsCollection);
+
     const { items, ...timesheetData } = {
       ...data,
+      id: docRef.id,
       hoursWorked: calculateTotalHours(data.items),
       createdAt: Timestamp.fromDate(new Date()),
       updatedAt: Timestamp.fromDate(new Date()),
     };
-    const docRef = await addDoc(timesheetsCollection, timesheetData);
+    await setDoc(docRef, timesheetData);
+
     const itemsSubcollection = getItemsSubcollection(userId, docRef.id);
     for (const item of items) {
       await addDoc(itemsSubcollection, {
@@ -201,7 +281,8 @@ export const deleteTimesheet = async (
 export const saveTimesheetItem = async (
   userId: string,
   timesheetId: string,
-  item: TimesheetItem
+  item: TimesheetItem,
+  dispatch: any
 ) => {
   try {
     const itemsCollection = collection(
@@ -212,15 +293,20 @@ export const saveTimesheetItem = async (
       timesheetId,
       "items"
     );
+    const docRef = await doc(itemsCollection);
     const itemData = {
       ...item,
+      id: docRef.id,
       hoursWorked: calculateHoursWorked(item.in, item.out),
       createdAt: Timestamp.fromDate(new Date()),
       updatedAt: Timestamp.fromDate(new Date()),
     };
-    const docRef = await addDoc(itemsCollection, itemData);
+    await setDoc(docRef, itemData);
+    dispatch({
+      type: timesheetActions.ADD_TIMESHEET_ITEM,
+      payload: { timesheetId: timesheetId, item: itemData },
+    });
     console.log("Timesheet item added with ID:", docRef.id);
-    return { ...itemData, id: docRef.id };
   } catch (error) {
     console.error("Error saving timesheet item:", error);
     throw error;
@@ -262,7 +348,8 @@ export const updateTimesheetItem = async (
 export const deleteTimesheetItem = async (
   userId: string,
   timesheetId: string,
-  itemId: string
+  itemId: string,
+  dispatch: any
 ) => {
   try {
     const itemDoc = doc(
@@ -275,6 +362,10 @@ export const deleteTimesheetItem = async (
       itemId
     );
     await deleteDoc(itemDoc);
+    dispatch({
+      type: timesheetActions.DELETE_TIMESHEET_ITEM,
+      payload: { timesheetId, itemId },
+    });
     console.log("Timesheet item deleted with ID:", itemId);
   } catch (error) {
     console.error("Error deleting timesheet item:", error);

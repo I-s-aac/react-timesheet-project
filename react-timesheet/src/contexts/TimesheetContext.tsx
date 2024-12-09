@@ -48,6 +48,10 @@ export const TimesheetProvider = ({ children }: TimesheetProviderProps) => {
     fetchUserTimesheets();
   }, [userId]);
 
+  useEffect(() => {
+    console.log("timesheets was updated", timesheets);
+  }, [timesheets]);
+
   return (
     <TimesheetContext.Provider value={{ timesheets, setTimesheets }}>
       {children}

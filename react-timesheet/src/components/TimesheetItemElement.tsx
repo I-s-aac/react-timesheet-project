@@ -1,27 +1,32 @@
 import React from "react";
-import { Timesheet } from "@/services/timesheet";
+import { deleteTimesheetItem, Timesheet } from "@/services/timesheet";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
+import { useUserContext } from "@/contexts/UserContext";
 
 type TimesheetItemElementProps = {
-  timesheet?: Timesheet;
-  timesheetId?: string;
+  timesheetId: string;
 };
 // work in progress, modify later
 const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
-  timesheet,
   timesheetId,
 }) => {
-  const { timesheets } = useTimesheetContext();
-  if (timesheetId) {
-    timesheet = timesheets.find((ts) => ts.id === timesheetId);
-  }
-  if (timesheet) {
+  const { userId } = useUserContext();
+  const { timesheets, setTimesheets } = useTimesheetContext();
+
+  const timesheet = timesheets.find((ts) => ts.id === timesheetId);
+
+  if (timesheet && timesheetId) {
     /* planned functionality 
       edit mode to allow editing title, detail, in, and out, use regex to validate
       delete button, with confirmation window
     */
-    const items = timesheet.items;
-    return items.map((item, index) => {
+
+    const handleDeleteTimesheetItem = async (itemId: string) => {
+      if (itemId) {
+        await deleteTimesheetItem(userId, timesheetId, itemId, setTimesheets);
+      }
+    };
+    return timesheet.items.map((item, index) => {
       return (
         <li
           key={index}
@@ -30,13 +35,20 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
           <div className="flex justify-center items-center">
             <h4 className="text-xl">{item.title}</h4>
             <span>{item.detail}</span>
+            <button
+              onClick={() => {
+                handleDeleteTimesheetItem(item.id);
+              }}
+            >
+              Delete
+            </button>
           </div>
           <div className="flex flex-col">
-            <span>In: {item.in.toDate().toISOString()}</span>
+            <span>In: {item.in.toDate().toUTCString()}</span>
             <span>
               Out:{" "}
               {item.out.seconds !== item.in.seconds ? (
-                item.out.toDate().toISOString()
+                item.out.toDate().toUTCString()
               ) : (
                 <span>Edit</span>
               )}

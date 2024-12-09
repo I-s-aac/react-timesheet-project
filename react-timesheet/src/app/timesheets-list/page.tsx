@@ -14,22 +14,13 @@ export default function Page() {
   const { userId } = useUserContext();
   const { timesheets, setTimesheets } = useTimesheetContext();
 
-  const [selectedTimesheetId, setSelectedTimesheetId] = useState<string>(""); // Selected timesheet
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
-
-  // TimesheetItem inputs
-  const [newItem, setNewItem] = useState({
-    date: "",
-    in: "",
-    out: "",
-    title: "",
-    detail: "",
-  });
 
   // Save new timesheet
   const handleCreateTimesheet = async () => {
     if (!newTimesheetTitle.trim()) return alert("Enter a timesheet title!");
     const newTimesheet = {
+      id: "",
       title: newTimesheetTitle,
       items: [],
       hoursWorked: 0,
@@ -43,23 +34,6 @@ export default function Page() {
       }
     } catch (err) {
       console.error("Error creating timesheet:", err);
-    }
-  };
-
-  // Delete selected timesheet
-  const handleDeleteTimesheet = async () => {
-    if (!selectedTimesheetId) return alert("Select a timesheet to delete!");
-
-    try {
-      if (userId) {
-        // Call the function to delete the timesheet from the database
-        await deleteTimesheet(setTimesheets, userId, selectedTimesheetId);
-
-        // Clear the selected timesheet from the state
-        setSelectedTimesheetId("");
-      }
-    } catch (err) {
-      console.error("Error deleting timesheet:", err);
     }
   };
 
