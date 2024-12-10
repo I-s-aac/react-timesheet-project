@@ -10,6 +10,7 @@ import {
   Button,
 } from "@mui/material";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
+import { useUndoContext } from "@/contexts/UndoContext";
 
 export default function NavigationDrawer() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -18,6 +19,8 @@ export default function NavigationDrawer() {
   // Use MUI theme to detect screen size
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up("md"));
+
+  const { undoStack } = useUndoContext();
 
   const toggleDrawer = () => {
     setMobileOpen(!mobileOpen);
@@ -49,6 +52,15 @@ export default function NavigationDrawer() {
           sx={{ textTransform: "none" }}
         >
           Tutorial
+        </Button>
+        <Button
+          onClick={() => {
+            if (undoStack[0]) undoStack[0].undo();
+          }}
+          variant="text"
+          sx={{ textTransform: "none" }}
+        >
+          {undoStack.length > 0 ? (<span>Undo Last Delete</span>) : (<span>Nothing to Undo</span>)}
         </Button>
       </Box>
     </Box>

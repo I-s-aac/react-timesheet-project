@@ -396,20 +396,14 @@ export const deleteTimesheetItem = async (
   addToUndoStack: any
 ) => {
   try {
-    const itemDoc = doc(
-      db,
-      "users",
-      userId,
-      "timesheets",
-      timesheetId,
-      "items",
-      itemId
-    );
+    const location = `users/${userId}/timesheets/${timesheetId}/items/${itemId}`;
 
+    const itemDoc = doc(db, location);
     const snapshot = await getDoc(itemDoc);
-    console.log(itemDoc, snapshot, snapshot.data(), snapshot.exists());
-    const value = itemDoc;
-    const location = `users/${userId}/timesheeets/${timesheetId}/items/${itemId}`;
+
+    const value = snapshot.data();
+    if (value?.id && value.id !== itemId)
+      console.log("mismatch of value.id and itemId");
 
     addToUndoStack(
       undoTypes.DELETE,
@@ -453,9 +447,11 @@ const restoreTimesheetItem = (
 ) => {
   // Extract the timesheet ID from the location
   const segments = location.split("/");
-  const timesheetId = segments[segments.length - 2]; // Second-to-last segment is the timesheet ID
+  const timesheetId = segments[segments.length - 3];
+  const itemId = segments[segments.length - 1];
+
   setTimesheets({
     type: timesheetActions.ADD_TIMESHEET_ITEM,
-    payload: { timesheetId, newItem: { ...value } },
+    payload: { timesheetId, newItem: { ...value, id: itemId } },
   });
 };

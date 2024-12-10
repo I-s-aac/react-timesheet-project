@@ -25,7 +25,6 @@ export default function Page() {
   const [title, setTitle] = useState<string>("Edit");
   const [detail, setDetail] = useState<string>("Edit");
 
-
   const { undoStack } = useUndoContext();
 
   if (timesheetId && typeof timesheetId === "string") {
@@ -78,13 +77,6 @@ export default function Page() {
               Clock out
             </button>
           </div>
-          <button
-            onClick={() => {
-              undoStack[0].undo();
-            }}
-          >
-            test undo
-          </button>
         </div>
         <div>
           <TimesheetElement

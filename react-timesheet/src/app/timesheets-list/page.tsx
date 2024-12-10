@@ -58,13 +58,7 @@ export default function Page() {
           add timesheet
         </button>
       </div>
-      <button
-        onClick={() => {
-          undoStack[0].undo();
-        }}
-      >
-        test undo
-      </button>
+
       <ul>
         {timesheets.map((t, idx) => {
           return <TimesheetElement key={idx} timesheet={t} />;

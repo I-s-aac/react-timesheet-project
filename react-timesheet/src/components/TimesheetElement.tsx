@@ -24,7 +24,6 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
     timesheet = timesheets.find((ts) => ts.id === timesheetId);
   }
   if (timesheet) {
-    console.log(timesheet);
     /* planned functionality
     allow editing title, validate with regex
     make draggable

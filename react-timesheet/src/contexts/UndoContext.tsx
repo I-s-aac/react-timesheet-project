@@ -45,6 +45,7 @@ type UndoStackItem = {
 export const UndoProvider = ({ children }: UndoProviderProps) => {
   const undoStackLength = 10; // no more than x items kept at once
   const [undoStack, setUndoStack] = useState<any[]>([]);
+  const { timesheets } = useTimesheetContext();
 
   const undoChange = async (data: UndoStackItem) => {
     switch (data.type) {
@@ -64,7 +65,7 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
           for (let i = 0; i < data.values.length; i++) {
             const value = data.values[i];
             const location = data.locations[i];
-
+            console.log(data.values, data.locations);
             if (location.split("/").length % 2 === 0) {
               // This is a document path
               const docRef = doc(db, location);
@@ -132,6 +133,9 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
   useEffect(() => {
     console.log("undoStack changed: ", undoStack);
   }, [undoStack]);
+  useEffect(() => {
+    console.log("timesheets changed: ", timesheets);
+  }, [timesheets]);
 
   return (
     <UndoContext.Provider value={{ undoStack, addToUndoStack }}>
