@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { deleteTimesheetItem } from "@/services/timesheet";
+import { deleteTimesheetItem, TimesheetItem } from "@/services/timesheet";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { useUndoContext } from "@/contexts/UndoContext";
@@ -23,12 +23,12 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
       delete button, with undo popup
     */
 
-    const handleDeleteTimesheetItem = async (itemId: string) => {
-      if (itemId) {
+    const handleDeleteTimesheetItem = async (item: TimesheetItem) => {
+      if (item) {
         await deleteTimesheetItem(
           userId,
           timesheetId,
-          itemId,
+          item,
           setTimesheets,
           addToUndoStack
         );
@@ -46,7 +46,7 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
             <span>{item.detail}</span>
             <button
               onClick={() => {
-                handleDeleteTimesheetItem(item.id);
+                handleDeleteTimesheetItem(item);
               }}
             >
               Delete

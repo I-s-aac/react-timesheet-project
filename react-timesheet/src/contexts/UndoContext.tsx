@@ -73,10 +73,12 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
             } else {
               // This is a collection path; restore items
               const collectionRef = collection(db, location);
+              console.log(value);
               for (const item of value) {
                 const itemRef = doc(collectionRef); // Auto-generate item document ID
                 await setDoc(itemRef, item);
               }
+              console.log("b");
             }
 
             // If cleanup exists, call it

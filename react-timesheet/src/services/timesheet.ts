@@ -276,7 +276,6 @@ export const deleteTimesheet = async (
       ? timesheetSnapshot.data()
       : null;
     const itemsData = itemsSnapshot.docs.map((doc) => doc.data());
-
     if (timesheetData) {
       const timesheetLocation = `users/${userId}/timesheets/${timesheetId}`;
       const itemsLocation = `users/${userId}/timesheets/${timesheetId}/items`;
@@ -284,6 +283,7 @@ export const deleteTimesheet = async (
       const data = [];
       const locations = [];
       const functions = [];
+      console.log(itemsData, itemsLocation);
 
       if (itemsData.length > 0) {
         data.push(itemsData);
@@ -391,34 +391,34 @@ export const updateTimesheetItem = async (
 export const deleteTimesheetItem = async (
   userId: string,
   timesheetId: string,
-  itemId: string,
+  item: TimesheetItem,
   dispatch: any,
   addToUndoStack: any
 ) => {
   try {
-    const location = `users/${userId}/timesheets/${timesheetId}/items/${itemId}`;
+    const location = `users/${userId}/timesheets/${timesheetId}/items/${item.id}`;
 
     const itemDoc = doc(db, location);
     const snapshot = await getDoc(itemDoc);
 
     const value = snapshot.data();
-    if (value?.id && value.id !== itemId)
-      console.log("mismatch of value.id and itemId");
+
+    console.log(value, item);
 
     addToUndoStack(
       undoTypes.DELETE,
-      [value],
+      [item],
       [location],
-      [() => restoreTimesheetItem(value, location, dispatch)]
+      [() => restoreTimesheetItem(item, location, dispatch)]
     );
 
     await deleteDoc(itemDoc);
 
     dispatch({
       type: timesheetActions.DELETE_TIMESHEET_ITEM,
-      payload: { timesheetId, itemId },
+      payload: { timesheetId, itemId: item.id },
     });
-    console.log("Timesheet item deleted with ID:", itemId);
+    console.log("Timesheet item deleted: ", item);
   } catch (error) {
     console.error("Error deleting timesheet item:", error);
     throw error;
@@ -441,17 +441,16 @@ const restoreTimesheet = (
 };
 
 const restoreTimesheetItem = (
-  value: any,
+  value: TimesheetItem,
   location: string,
   setTimesheets: Function
 ) => {
   // Extract the timesheet ID from the location
   const segments = location.split("/");
   const timesheetId = segments[segments.length - 3];
-  const itemId = segments[segments.length - 1];
 
   setTimesheets({
     type: timesheetActions.ADD_TIMESHEET_ITEM,
-    payload: { timesheetId, newItem: { ...value, id: itemId } },
+    payload: { timesheetId, newItem: value },
   });
 };
