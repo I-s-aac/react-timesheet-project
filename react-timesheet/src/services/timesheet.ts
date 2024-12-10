@@ -11,6 +11,7 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { undoTypes } from "@/contexts/UndoContext";
+import { LocationOn } from "@mui/icons-material";
 
 export type Timesheet = {
   id: string;
@@ -303,7 +304,7 @@ export const deleteTimesheet = async (
           )
         );
       }
-      addToUndoStack("DELETE", data, locations, functions);
+      addToUndoStack(undoTypes.DELETE, data, locations, functions);
     }
 
     // delete the items subcollection before the timesheet doc
@@ -404,7 +405,21 @@ export const deleteTimesheetItem = async (
       "items",
       itemId
     );
+
+    const snapshot = await getDoc(itemDoc);
+    console.log(itemDoc, snapshot, snapshot.data(), snapshot.exists());
+    const value = itemDoc;
+    const location = `users/${userId}/timesheeets/${timesheetId}/items/${itemId}`;
+
+    addToUndoStack(
+      undoTypes.DELETE,
+      [value],
+      [location],
+      [() => restoreTimesheetItem(value, location, dispatch)]
+    );
+
     await deleteDoc(itemDoc);
+
     dispatch({
       type: timesheetActions.DELETE_TIMESHEET_ITEM,
       payload: { timesheetId, itemId },

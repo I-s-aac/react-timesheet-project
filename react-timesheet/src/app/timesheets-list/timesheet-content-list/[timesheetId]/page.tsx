@@ -3,6 +3,7 @@
 import TimesheetElement from "@/components/TimesheetElement";
 import TimesheetItemElement from "@/components/TimesheetItemElement";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
+import { useUndoContext } from "@/contexts/UndoContext";
 import { useUserContext } from "@/contexts/UserContext";
 import { saveTimesheetItem } from "@/services/timesheet";
 import { Timestamp } from "firebase/firestore";
@@ -23,6 +24,9 @@ export default function Page() {
 
   const [title, setTitle] = useState<string>("Edit");
   const [detail, setDetail] = useState<string>("Edit");
+
+
+  const { undoStack } = useUndoContext();
 
   if (timesheetId && typeof timesheetId === "string") {
     // create a timesheet item
@@ -74,6 +78,13 @@ export default function Page() {
               Clock out
             </button>
           </div>
+          <button
+            onClick={() => {
+              undoStack[0].undo();
+            }}
+          >
+            test undo
+          </button>
         </div>
         <div>
           <TimesheetElement
