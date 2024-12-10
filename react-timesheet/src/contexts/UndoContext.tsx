@@ -17,6 +17,8 @@ import {
   Timestamp,
   setDoc,
 } from "firebase/firestore";
+import { useTimesheetContext } from "./TimesheetContext";
+import { Timesheet, timesheetActions } from "@/services/timesheet";
 
 // Create context
 const UndoContext = createContext<any>(undefined);
@@ -34,8 +36,9 @@ export const undoTypes = {
 
 type UndoStackItem = {
   type: string;
-  value: any;
-  location: string;
+  values: any[];
+  locations: string[];
+  cleanups?: Function[];
   undo: Function;
 };
 
@@ -43,26 +46,80 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
   const undoStackLength = 10; // no more than x items kept at once
   const [undoStack, setUndoStack] = useState<any[]>([]);
 
-  const undoChange = (data: UndoStackItem) => {
+  const undoChange = async (data: UndoStackItem) => {
     switch (data.type) {
       case undoTypes.CREATE: {
+        // Implement undo for create
+        break;
       }
       case undoTypes.DELETE: {
+        if (data.values.length !== data.locations.length) {
+          console.error(
+            "Undo data mismatch: values and locations arrays must have the same length."
+          );
+          break;
+        }
+
+        try {
+          for (let i = 0; i < data.values.length; i++) {
+            const value = data.values[i];
+            const location = data.locations[i];
+
+            if (location.split("/").length % 2 === 0) {
+              // This is a document path
+              const docRef = doc(db, location);
+              await setDoc(docRef, value);
+            } else {
+              // This is a collection path; restore items
+              const collectionRef = collection(db, location);
+              for (const item of value) {
+                const itemRef = doc(collectionRef); // Auto-generate item document ID
+                await setDoc(itemRef, item);
+              }
+            }
+
+            // If cleanup exists, call it
+            if (data?.cleanups && data?.cleanups[i]) {
+              await data.cleanups[i]();
+            }
+          }
+
+          // Update the undo stack: remove the undone action
+          setUndoStack((prevStack) =>
+            prevStack.filter((item) => item !== data)
+          );
+
+          console.log("Undo successful: Data restored.");
+        } catch (error) {
+          console.error("Error undoing delete action:", error);
+        }
+        break;
       }
+
       case undoTypes.UPDATE: {
+        // Implement undo for update
+        break;
       }
       default: {
         throw new Error(`Unknown data type: ${data.type}`);
       }
     }
-    // remove the data from the undoStack here probably
+
+    // Remove the data from the undoStack after performing the undo action
+    setUndoStack((prevStack) => prevStack.filter((item) => item !== data));
   };
 
-  const addToUndoStack = (type: string, value: any, location: string) => {
+  const addToUndoStack = (
+    type: string,
+    values: any[],
+    locations: string[],
+    cleanups: Function[]
+  ) => {
     const data = {
       type: type,
-      value: value,
-      location: location,
+      values: values,
+      locations: locations,
+      cleanups: cleanups,
       undo: function () {
         undoChange(this);
       },
@@ -71,6 +128,10 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
     const newValue = [data, ...undoStack].slice(0, undoStackLength);
     setUndoStack(newValue);
   };
+
+  useEffect(() => {
+    console.log("undoStack changed: ", undoStack);
+  }, [undoStack]);
 
   return (
     <UndoContext.Provider value={{ undoStack, addToUndoStack }}>

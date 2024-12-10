@@ -24,6 +24,7 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
     timesheet = timesheets.find((ts) => ts.id === timesheetId);
   }
   if (timesheet) {
+    console.log(timesheet);
     /* planned functionality
     allow editing title, validate with regex
     make draggable
@@ -35,10 +36,10 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
         if (userId) {
           // Call the function to delete the timesheet from the database
           await deleteTimesheet(
-            setTimesheets,
-            addToUndoStack,
             userId,
-            timesheetId
+            timesheetId,
+            setTimesheets,
+            addToUndoStack
           );
         }
       } catch (err) {
@@ -58,6 +59,7 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
               show details
             </Link>
           )}
+          {/* IMPORTANT, HIDE DELETE BUTTON IN THE TIMESHEETITEM LIST */}
           <button
             onClick={() => {
               handleDeleteTimesheet(timesheet.id);

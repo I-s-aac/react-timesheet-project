@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { deleteTimesheetItem } from "@/services/timesheet";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import { useUserContext } from "@/contexts/UserContext";
+import { useUndoContext } from "@/contexts/UndoContext";
 
 type TimesheetItemElementProps = {
   timesheetId: string;
@@ -12,6 +13,7 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
 }) => {
   const { userId } = useUserContext();
   const { timesheets, setTimesheets } = useTimesheetContext();
+  const { addToUndoStack } = useUndoContext();
 
   const timesheet = timesheets.find((ts) => ts.id === timesheetId);
 
@@ -23,9 +25,16 @@ const TimesheetItemElement: React.FC<TimesheetItemElementProps> = ({
 
     const handleDeleteTimesheetItem = async (itemId: string) => {
       if (itemId) {
-        await deleteTimesheetItem(userId, timesheetId, itemId, setTimesheets);
+        await deleteTimesheetItem(
+          userId,
+          timesheetId,
+          itemId,
+          setTimesheets,
+          addToUndoStack
+        );
       }
     };
+
     return timesheet.items.map((item, index) => {
       return (
         <li

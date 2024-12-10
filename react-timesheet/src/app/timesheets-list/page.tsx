@@ -5,6 +5,7 @@ import { Timestamp } from "firebase/firestore";
 import TimesheetElement from "@/components/TimesheetElement";
 import { useTimesheetContext } from "@/contexts/TimesheetContext";
 import { useUserContext } from "@/contexts/UserContext";
+import { useUndoContext } from "@/contexts/UndoContext";
 
 export default function Page() {
   /* planned functionality/stuff
@@ -16,6 +17,7 @@ export default function Page() {
 
   const [newTimesheetTitle, setNewTimesheetTitle] = useState<string>("");
 
+  const { undoStack } = useUndoContext();
   // Save new timesheet
   const handleCreateTimesheet = async () => {
     if (!newTimesheetTitle.trim()) return alert("Enter a timesheet title!");
@@ -56,6 +58,13 @@ export default function Page() {
           add timesheet
         </button>
       </div>
+      <button
+        onClick={() => {
+          undoStack[0].undo();
+        }}
+      >
+        test undo
+      </button>
       <ul>
         {timesheets.map((t, idx) => {
           return <TimesheetElement key={idx} timesheet={t} />;

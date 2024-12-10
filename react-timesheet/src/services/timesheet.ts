@@ -8,7 +8,9 @@ import {
   deleteDoc,
   Timestamp,
   setDoc,
+  getDoc,
 } from "firebase/firestore";
+import { undoTypes } from "@/contexts/UndoContext";
 
 export type Timesheet = {
   id: string;
@@ -39,7 +41,7 @@ export const timesheetActions = {
   ADD_TIMESHEET_ITEM: "ADD_TIMESHEET_ITEM",
   UPDATE_TIMESHEET_ITEM: "UPDATE_TIMESHEET_ITEM",
   DELETE_TIMESHEET_ITEM: "DELETE_TIMESHEET_ITEM",
-} as const;
+};
 
 export type Action =
   | { type: string; payload: Timesheet[] }
@@ -81,7 +83,6 @@ export const timesheetReducer = (state: Timesheet[], action: Action) => {
         timesheetId: string;
         newItem: TimesheetItem;
       };
-
       return state.map((ts) => {
         if (ts.id === timesheetId) {
           return {
@@ -258,20 +259,62 @@ export const updateTimesheet = async (
 };
 
 export const deleteTimesheet = async (
-  dispatch: any,
-  addToUndoStack: any,
   userId: string,
-  id: string
+  timesheetId: string,
+  dispatch: any,
+  addToUndoStack: any
 ) => {
   try {
-    const timesheetDoc = doc(db, "users", userId, "timesheets", id);
-    const itemsSubcollection = getItemsSubcollection(userId, id);
+    const timesheetDoc = doc(db, "users", userId, "timesheets", timesheetId);
+    const itemsSubcollection = getItemsSubcollection(userId, timesheetId);
     const itemsSnapshot = await getDocs(itemsSubcollection);
+
+    // Capture the data to be deleted, for undo functionality
+    const timesheetSnapshot = await getDoc(timesheetDoc);
+    const timesheetData = timesheetSnapshot.exists()
+      ? timesheetSnapshot.data()
+      : null;
+    const itemsData = itemsSnapshot.docs.map((doc) => doc.data());
+
+    if (timesheetData) {
+      const timesheetLocation = `users/${userId}/timesheets/${timesheetId}`;
+      const itemsLocation = `users/${userId}/timesheets/${timesheetId}/items`;
+
+      const data = [];
+      const locations = [];
+      const functions = [];
+
+      if (itemsData.length > 0) {
+        data.push(itemsData);
+        locations.push(itemsLocation);
+        functions.push(() =>
+          restoreTimesheetItem(itemsData, itemsLocation, dispatch)
+        );
+      }
+      if (timesheetData) {
+        data.push(timesheetData);
+        locations.push(timesheetLocation);
+        functions.push(() =>
+          restoreTimesheet(
+            timesheetData,
+            itemsData,
+            timesheetLocation,
+            dispatch
+          )
+        );
+      }
+      addToUndoStack("DELETE", data, locations, functions);
+    }
+
+    // delete the items subcollection before the timesheet doc
     for (const itemDoc of itemsSnapshot.docs) {
       await deleteDoc(doc(itemsSubcollection, itemDoc.id));
     }
+    // delete the timesheet doc
     await deleteDoc(timesheetDoc);
-    dispatch({ type: timesheetActions.DELETE_TIMESHEET, payload: id });
+
+    // update state
+    dispatch({ type: timesheetActions.DELETE_TIMESHEET, payload: timesheetId });
   } catch (error) {
     console.error("Error deleting timesheet:", error);
   }
@@ -303,7 +346,7 @@ export const saveTimesheetItem = async (
     await setDoc(docRef, itemData);
     dispatch({
       type: timesheetActions.ADD_TIMESHEET_ITEM,
-      payload: { timesheetId: timesheetId, item: itemData },
+      payload: { timesheetId: timesheetId, newItem: itemData },
     });
     console.log("Timesheet item added with ID:", docRef.id);
   } catch (error) {
@@ -348,7 +391,8 @@ export const deleteTimesheetItem = async (
   userId: string,
   timesheetId: string,
   itemId: string,
-  dispatch: any
+  dispatch: any,
+  addToUndoStack: any
 ) => {
   try {
     const itemDoc = doc(
@@ -370,4 +414,33 @@ export const deleteTimesheetItem = async (
     console.error("Error deleting timesheet item:", error);
     throw error;
   }
+};
+
+const restoreTimesheet = (
+  value: any,
+  items: any,
+  location: string,
+  setTimesheets: Function
+) => {
+  // Extract the timesheet ID from the location
+  const timesheetId = location.split("/").pop();
+  value = { ...value, items: items };
+  setTimesheets({
+    type: timesheetActions.ADD_TIMESHEET,
+    payload: { ...value, id: timesheetId },
+  });
+};
+
+const restoreTimesheetItem = (
+  value: any,
+  location: string,
+  setTimesheets: Function
+) => {
+  // Extract the timesheet ID from the location
+  const segments = location.split("/");
+  const timesheetId = segments[segments.length - 2]; // Second-to-last segment is the timesheet ID
+  setTimesheets({
+    type: timesheetActions.ADD_TIMESHEET_ITEM,
+    payload: { timesheetId, newItem: { ...value } },
+  });
 };
