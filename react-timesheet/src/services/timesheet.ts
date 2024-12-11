@@ -283,14 +283,17 @@ export const deleteTimesheet = async (
       const data = [];
       const locations = [];
       const functions = [];
-      console.log(itemsData, itemsLocation);
 
+      // fix needed here:
+      // TimesheetItems are restored with the location items, the location should be items/id, make sure id matches the
+      // itemsData[i].id as well, that should fix the id desync
       if (itemsData.length > 0) {
         data.push(itemsData);
         locations.push(itemsLocation);
         functions.push(() =>
           restoreTimesheetItem(itemsData, itemsLocation, dispatch)
         );
+        console.log(itemsData, itemsLocation);
       }
       if (timesheetData) {
         data.push(timesheetData);
@@ -448,6 +451,8 @@ const restoreTimesheetItem = (
   // Extract the timesheet ID from the location
   const segments = location.split("/");
   const timesheetId = segments[segments.length - 3];
+
+  console.log(value.id, segments[segments.length - 1]);
 
   setTimesheets({
     type: timesheetActions.ADD_TIMESHEET_ITEM,
