@@ -278,23 +278,28 @@ export const deleteTimesheet = async (
     const itemsData = itemsSnapshot.docs.map((doc) => doc.data());
     if (timesheetData) {
       const timesheetLocation = `users/${userId}/timesheets/${timesheetId}`;
-      const itemsLocation = `users/${userId}/timesheets/${timesheetId}/items`;
+      const itemsLocation = `${timesheetLocation}/items`;
 
       const data = [];
       const locations = [];
       const functions = [];
 
-      // fix needed here:
-      // TimesheetItems are restored with the location items, the location should be items/id, make sure id matches the
-      // itemsData[i].id as well, that should fix the id desync
-      if (itemsData.length > 0) {
-        data.push(itemsData);
-        locations.push(itemsLocation);
-        functions.push(() =>
-          restoreTimesheetItem(itemsData, itemsLocation, dispatch)
-        );
-        console.log(itemsData, itemsLocation);
+      // add TimesheetItems to be restored
+      for (let i = 0; i < itemsData.length; i++) {
+        const item = itemsData[i];
+        const location = `${itemsLocation}/${itemsData[i].id}`;
+        console.log(item, location);
+
+        if (item?.id && item?.in && item?.out && item?.title) {
+          const item2 = item as TimesheetItem; // fixes item being seen as DocumentData instead of TimesheetItem
+          data.push(item);
+          locations.push(location);
+          functions.push(() => {
+            restoreTimesheetItem(item2, location, dispatch);
+          });
+        }
       }
+
       if (timesheetData) {
         data.push(timesheetData);
         locations.push(timesheetLocation);
