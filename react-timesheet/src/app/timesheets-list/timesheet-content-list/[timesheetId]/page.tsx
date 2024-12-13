@@ -25,8 +25,6 @@ export default function Page() {
   const [title, setTitle] = useState<string>("Edit");
   const [detail, setDetail] = useState<string>("Edit");
 
-  const { undoStack } = useUndoContext();
-
   if (timesheetId && typeof timesheetId === "string") {
     // create a timesheet item
     const handleCreateTimesheetItem = async () => {

@@ -288,7 +288,6 @@ export const deleteTimesheet = async (
       for (let i = 0; i < itemsData.length; i++) {
         const item = itemsData[i];
         const location = `${itemsLocation}/${itemsData[i].id}`;
-        console.log(item, location);
 
         if (item?.id && item?.in && item?.out && item?.title) {
           const item2 = item as TimesheetItem; // fixes item being seen as DocumentData instead of TimesheetItem
@@ -411,8 +410,6 @@ export const deleteTimesheetItem = async (
 
     const value = snapshot.data();
 
-    console.log(value, item);
-
     addToUndoStack(
       undoTypes.DELETE,
       [item],
@@ -456,8 +453,6 @@ const restoreTimesheetItem = (
   // Extract the timesheet ID from the location
   const segments = location.split("/");
   const timesheetId = segments[segments.length - 3];
-
-  console.log(value.id, segments[segments.length - 1]);
 
   setTimesheets({
     type: timesheetActions.ADD_TIMESHEET_ITEM,

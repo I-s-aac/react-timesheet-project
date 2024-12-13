@@ -7,18 +7,8 @@ import React, {
   ReactNode,
 } from "react";
 import { db } from "../services/firebase";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  doc,
-  updateDoc,
-  deleteDoc,
-  Timestamp,
-  setDoc,
-} from "firebase/firestore";
+import { collection, doc, setDoc } from "firebase/firestore";
 import { useTimesheetContext } from "./TimesheetContext";
-import { Timesheet, timesheetActions } from "@/services/timesheet";
 
 // Create context
 const UndoContext = createContext<any>(undefined);
@@ -65,7 +55,7 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
           for (let i = 0; i < data.values.length; i++) {
             const value = data.values[i];
             const location = data.locations[i];
-            console.log(data.values, data.locations);
+
             if (location.split("/").length % 2 === 0) {
               // This is a document path
               const docRef = doc(db, location);
@@ -73,12 +63,10 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
             } else {
               // This is a collection path; restore items
               const collectionRef = collection(db, location);
-              console.log(value);
               for (const item of value) {
                 const itemRef = doc(collectionRef); // Auto-generate item document ID
                 await setDoc(itemRef, item);
               }
-              console.log("b");
             }
 
             // If cleanup exists, call it
@@ -133,10 +121,10 @@ export const UndoProvider = ({ children }: UndoProviderProps) => {
   };
 
   useEffect(() => {
-    console.log("undoStack changed: ", undoStack);
+    // console.log("undoStack changed: ", undoStack);
   }, [undoStack]);
   useEffect(() => {
-    console.log("timesheets changed: ", timesheets);
+    // console.log("timesheets changed: ", timesheets);
   }, [timesheets]);
 
   return (
