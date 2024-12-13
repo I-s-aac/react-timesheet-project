@@ -9,7 +9,7 @@ import { saveTimesheetItem } from "@/services/timesheet";
 import { Timestamp } from "firebase/firestore";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export default function Page() {
   /* planned functionality/stuff
@@ -22,8 +22,20 @@ export default function Page() {
   const { userId } = useUserContext();
   const { setTimesheets } = useTimesheetContext();
 
+  const titleInput = useRef<any>(null);
+  const detailInput = useRef<any>(null);
+
   const [title, setTitle] = useState<string>("Edit");
   const [detail, setDetail] = useState<string>("Edit");
+
+  const clearInputs = () => {
+    if (titleInput.current?.value && detailInput.current?.value) {
+      titleInput.current.value = "";
+      detailInput.current.value = "";
+      setTitle("");
+      setDetail("");
+    }
+  };
 
   if (timesheetId && typeof timesheetId === "string") {
     // create a timesheet item
@@ -32,8 +44,8 @@ export default function Page() {
         id: "",
         in: Timestamp.now(),
         out: Timestamp.now(),
-        detail: title,
-        title: detail,
+        title: title,
+        detail: detail,
       };
       if (timesheetId) {
         try {
@@ -53,9 +65,30 @@ export default function Page() {
         <div className="flex flex-col">
           <Link href="../">go back</Link>
           <div className="flex flex-col">
+            <label>
+              Title
+              <input
+                ref={titleInput}
+                type="text"
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                }}
+              />
+            </label>
+            <label>
+              Details
+              <input
+                ref={detailInput}
+                type="text"
+                onChange={(e) => {
+                  setDetail(e.target.value);
+                }}
+              />
+            </label>
             <button
               onClick={() => {
                 handleCreateTimesheetItem();
+                clearInputs();
               }}
             >
               Add new entry

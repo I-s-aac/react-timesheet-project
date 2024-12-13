@@ -58,7 +58,6 @@ const TimesheetElement: React.FC<TimesheetElementProps> = ({
               show details
             </Link>
           )}
-          {/* IMPORTANT, HIDE DELETE BUTTON IN THE TIMESHEETITEM LIST */}
           <button
             onClick={() => {
               handleDeleteTimesheet(timesheet.id);

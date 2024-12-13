@@ -11,7 +11,6 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { undoTypes } from "@/contexts/UndoContext";
-import { LocationOn } from "@mui/icons-material";
 
 export type Timesheet = {
   id: string;
